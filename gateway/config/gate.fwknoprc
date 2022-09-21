@@ -1,0 +1,11 @@
+[default]
+
+[sdp_ctrl_gate]
+SDP_ID                      333
+ALLOW_IP                    192.168.1.9 
+ACCESS                      tcp/5000
+SPA_SERVER                  192.168.1.99
+KEY_BASE64                  bDIge4dZ4X6ssMODIKSgCxjKoxlByPjsw+/FKpWD7Wk=
+HMAC_KEY_BASE64             plY3QcM5tLlwTQOAopHQs3XpEKnE1sbLOfsvHNycNMbJEtYvh7AXV8bNtbdpvDfhV3aAGurP8Er0epPVMw6IHQ==
+USE_HMAC                    Y
+

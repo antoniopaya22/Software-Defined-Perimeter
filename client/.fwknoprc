@@ -1,0 +1,13 @@
+[default]
+SPA_ID			3
+SPA_SERVER		172.22.0.2
+KEY_BASE64		6Mi5K2Za1w8fsA0yXbECEEB1P7Fr4PSj5cWPAQq2ZK8=
+HMAC_KEY_BASE64		h9ftu44crnyJxmJN9xAU255f1hjo8YN6nv+MArckvua2Tlms9XaVniYaXbEddFqTLsOoPdl+Ov9NEs3bCIkCQEPEN8TZwwnKrOx5nPyOZPkSvAlSE9k0W/B3iY7xXN9M/UET337icC0CKXP6/FG9pmnVR5/hSgc95itCdBhtKFE=
+USE_HMAC		Y
+SDP_CTRL_CLIENT_CONF	/home/antonio/sdp_ctrl_client.conf
+
+[sdp_ctrl_gate]
+SERVICE_IDS		1
+
+[service_gate]		
+SERVICE_IDS		2,3
