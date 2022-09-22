@@ -1,4 +1,4 @@
-# Software-Defined Perimeter
+# Securing the Software-Defined Perimeter framework with automated security configuration deployment systems
 
 ## Introduction
 

@@ -13,8 +13,7 @@ password=antonio
 # generate the root certificates
 echo "Generating Root Cert.."
 openssl genrsa -des3 -passout pass:$password -out ca.key 4096
-openssl req -new -x509 -days 365 -key ca.key -out ca.crt -passin pass:$password \
-    -subj "/C=$country/ST=$state/L=$locality/O=$organization/OU=$organizationalunit/CN=$commonname/emailAddress=$email"
+openssl req -new -x509 -days 365 -key ca.key -out ca.crt -passin pass:$password -subj "/C=$country/ST=$state/L=$locality/O=$organization/OU=$organizationalunit/CN=$commonname/emailAddress=$email"
 
 service mysql start
 node ./SDPController/genCredentials.js 1

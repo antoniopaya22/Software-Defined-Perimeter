@@ -22,8 +22,8 @@ module.exports = {
 	'allowLegacyAccessRequests': false,
 
 	// can create these using ./setup/create-certs.sh
-	'serverCert': '/controller/2.crt',
-	'serverKey':  '/controller/2.key',
+	'serverCert': '/home/antonio/SDP-with-Egida/controller/2.crt',
+	'serverKey':  '/home/antonio/SDP-with-Egida/controller/2.key',
 
 	// to be prompted for a password, set this field
 	// to a null string using '' (that's 2 single quotes
@@ -32,11 +32,11 @@ module.exports = {
 	'serverKeyPasswordRequired': true,
 
 	// can create these using ./setup/create-certs.sh
-	'caCert': '/controller/ca.crt',
-	'caKey': '/controller/ca.key',
+	'caCert': '/home/antonio/SDP-with-Egida/controller/ca.crt',
+	'caKey': '/home/antonio/SDP-with-Egida/controller/ca.key',
 
 	// to be prompted for a password, delete this field or
-	// set it to a null string using '' (that's 2 single 
+	// set it to a null string using '' (that's 2 single
 	// quotes with no spaces between)
 	'caKeyPassword': 'antonio',
 	'caKeyPasswordRequired': true,
@@ -45,7 +45,7 @@ module.exports = {
 	'daysToExpiration': 31,
 
 	// SPA encryption key length in bytes, range is 4 to 32
-	'encryptionKeyLen': 32,
+	'encryptionKeyLen': 64,
 
 	// SPA HMAC key length in bytes, range is 4 to 128
 	'hmacKeyLen': 128,
@@ -56,23 +56,23 @@ module.exports = {
 	'dbPasswordRequired': false,
 
 	// to be prompted for a password, delete this field or
-	// set it to a null string using '' (that's 2 single 
+	// set it to a null string using '' (that's 2 single
 	// quotes with no spaces between)
     'dbPassword': 'antonio',
     'dbName': 'sdp',
 
-    // if any of these are exceeded, the controller 
+    // if any of these are exceeded, the controller
     // disconnects from the client
     'maxDataTransmitTries': 3,
     'maxCredentialMakerTries': 3,
     'maxBadMessages': 3,
-    
+
     // retry interval (milliseconds) for database failures
     'databaseRetryInterval': 5000,
     'databaseMaxRetries': 5,
-    
+
     // interval (milliseconds) to check database for changes
     // that require sending updates to gateways
     'databaseMonitorInterval': 3000,
-    
+
 };
