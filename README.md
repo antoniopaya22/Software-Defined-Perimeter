@@ -39,7 +39,7 @@ $ node ./SDPController/sdpController.js
 ```bash
 $ cd gateway && ./installDependencies.sh
 
-$ yes | cp config/access.conf /etc/fwknop/ && yes | cp config/fwknopd.conf /etc/fwknop/ && yes | cp config/gate_sdp_ctrl_client.conf /etc/fwknop/ && yes | cp config/gate.fwknoprc /etc/fwknop/
+$ cp config/access.conf /etc/fwknop/ && cp config/fwknopd.conf /etc/fwknop/ && cp config/gate_sdp_ctrl_client.conf /etc/fwknop/ && cp config/gate.fwknoprc /etc/fwknop/
 ```
 
 - Start the SDP Gateway:

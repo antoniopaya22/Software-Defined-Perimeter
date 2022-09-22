@@ -2,7 +2,7 @@
 
 echo "Installing dependencies..."
 apt-get update -y
-apt-get -y install texinfo libtool autoconf make telnet openssl libssl-dev libjson0 libjson0-dev libpcap-dev git
+apt-get install -y make curl git net-tools conntrack openssl libssl-dev libjson-c-dev libpcap-dev texinfo libtool autoconf libuv1 libuv1-dev
 
 echo "Install FWKNOP"
 git clone https://github.com/waverleylabs/fwknop.git
@@ -12,6 +12,6 @@ aclocal
 autoheader
 automake --force-missing --add-missing
 autoconf
-./configure -disable-client --prefix=/usr
+./configure --disable-client --prefix=/usr
 make
 make install
