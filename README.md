@@ -24,25 +24,68 @@ This repository contains the code and resources necessary to deploy an architect
 
 ## Installation and deployment
 
-A
+To deploy in a Docker test environment you must first have Docker and Docker-Compose installed on your system. The next steps are to define the network architecture you want to set up and which services you want to protect with the gateways.
 
 ### Configure SDP-Controller
 
-A
+The SDP Controller uses a MySQL database to store the users, services, permissions, etc. In the database folder, there is included a file called `setup.sql` with the function of creating all the necessary tables and relations in the database.
+
+> This file includes in lines 693-704 some example data added:
+```sql
+INSERT INTO sdpid(sdpid,valid,type,country,state,locality,org,org_unit,alt_name,email,serial) VALUES (1,1,'gateway','ES', 'PA', 'A', 'Uniovi', 'SE', 'PhD', 'abc@xyz.com', 'abc123');
+INSERT INTO sdpid(sdpid,valid,type,country,state,locality,org,org_unit,alt_name,email,serial) VALUES (2,1,'controller','ES', 'PA', 'A', 'Uniovi', 'SE', 'PhD', 'abc@xyz.com', 'abc123');
+INSERT INTO sdpid(sdpid,valid,type,country,state,locality,org,org_unit,alt_name,email,serial) VALUES (3,1,'client','ES', 'PA', 'A', 'Uniovi', 'SE', 'PhD', 'abc@xyz.com', 'abc123');
+INSERT INTO service VALUES(1,'controller', 'controller' );
+INSERT INTO service VALUES(2,'tcp', 'tcp' );
+INSERT INTO service VALUES(3,'udp', 'udp' );
+INSERT INTO service_gateway (id,service_id, gateway_sdpid, protocol, port, nat_ip, nat_port) VALUES(1, 1, 1 ,'tcp',5000, 'controller', 5000);
+INSERT INTO service_gateway (id,service_id, gateway_sdpid, protocol, port, nat_ip, nat_port) VALUES(2, 2, 1 ,'tcp',4444, 'gateway', 4444);
+INSERT INTO sdpid_service VALUES (1, 1, 1);
+INSERT INTO sdpid_service VALUES (2, 1, 2);
+INSERT INTO sdpid_service VALUES(3, 3, 1);
+INSERT INTO sdpid_service VALUES(4, 3, 2);
+```
+
+> In the example data, a controller listening on port 5000 and a gateway allowing authorized connections on port 4444 is added.
+
+In the folder named `controller` you will find both the Dockerfile for the SDP Controller deployment and the following files:
+
+- `config.js`: Contains the SDP Controller configuration variables such as port, database connection or certificate locations.
+- `run.sh`: Generates the credentials and launches the SDP Controller process in listening mode.
 
 ### Configure SDP-Gateway
 
-A
+The `gateway` folder contains both the Dockerfile for the SDP Gateway deployment and a folder called `config` with the following configuration files that must be edited to adapt to the designed architecture:
+
+- `access.conf`: This file defines how fwknopd will modify firewall access controls for specific IPs/networks.
+
+- `fwknopd.conf`: This is the configuration file for fwknopd, the Firewall Knock Operator daemon (SPA).
+
+- `gate_sdp_ctrl_client.conf`: This file defines the locations of the certificates and how to connect to the SDP Controller.
+
+- `gate.fwknoprc`: fwknoprc stanzas configuration file
 
 ### Configure SDP-Client
 
-A
+The `client` folder contains a Dockerfile for the SDP Client deployment and the following configuration files for communication and authorization with the SDP Controller:
+
+- `.fwknoprc`: This file defines the services protected by the SDP Gateway that the client wants to access.
+
+- `sdp_ctrl_client.conf`: This file defines the locations of the certificates and how to connect to the SDP Controller.
 
 ### Start
+
+1. Modify the `docker-compose.yml` file to deploy the desired network architecture and run Docker-Compose. 
+
+**Important**: The SDP Controller is the one that generates the certificates, you must copy the necessary certificates to the SDP Client and SDP Gateway (in the example case they have a shared volume).
+
+> The content of the `docker-compose.yml` file contains a basic architecture with a single client, controller & gateway.
 
 ```bash
 $ docker-compose up -d
 ```
+
+2. Connecting the SDP Gateway and the SDP Controller
 
 ```bash
 $ docker exec -it sdp-gateway /bin/bash
@@ -62,6 +105,8 @@ $ fwknopd -f
 (sdp_message.c:272) Received service or access data message
 (sdp_ctrl_client.c:675) Access data update received
 ```
+
+3. Request certificates to the SDP Controller from the SDP Client
 
 ```bash
 $ docker exec -it sdp-client /bin/bash
