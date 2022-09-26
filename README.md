@@ -1,64 +1,77 @@
-# Securing the Software-Defined Perimeter framework with automated security configuration deployment systems
+# Software-Defined Perimeter
 
-## Introduction
+## Description
+
+This repository contains the code and resources necessary to deploy an architecture based on Software-Defined Perimeters using the open-source implementation made by [WaverleyLabs](https://www.waverleylabs.com/services/software-defined-perimeter-panther-sdp-implementation/). The deployment can be performed both on real machines and devices as well as on a virtualized network architecture using Docker and Docker-Compose to test the functionality of the SDPs.
+
+## Architecture & Components
+
+![SDP Architecture](docs/BasicSDP.svg)
+
+- **SDP Controller**: The SDP Controller uses the [WaverleyLabs - SDP Controller](https://github.com/waverleylabs/SDPController.git) repository and contains a set of scripts and resources to automate its configuration and deployment. For more information on SDP Controller, see the following sites:
+  - [http://www.waverleylabs.com/services/software-defined-perimeter](http://www.waverleylabs.com/services/software-defined-perimeter/)
+  - [https://cloudsecurityalliance.org/group/software-defined-perimeter/](https://cloudsecurityalliance.org/group/software-defined-perimeter/)
+
+- **SDP Gateway**: The SDP Gateway uses the open source software [fwknop](https://github.com/mrash/fwknop) which implements an authorization scheme known as Single Packet Authorization (SPA) for strong service concealment. SPA requires only a single packet which is encrypted, non-replayable, and authenticated via an HMAC in order to communicate desired access to a service that is hidden behind a firewall in a default-drop filtering stance. The SDP Gateway uses the iptables firewall to deny all requests to the Accepting Hosts (AH) by default, authorizing only those that have been authorized by the SDP Controller.
+
+- **SDP Client (IH)**: The SDP client or initiating host is responsible for requesting the necessary authorization from the SDP Controller to access the Accepting Hosts (AH) protected by the SDP Gateway.
+
+![SPA](docs/rsz_spa.png)
+
+## Installation and deployment
 
 A
 
-## Architecture
+### Configure SDP-Controller
 
 A
 
-## Installation
+### Configure SDP-Gateway
 
 A
 
-### SDP Controller
+### Configure SDP-Client
 
-- Install and prepare the SDP Controller:
+A
+
+### Start
 
 ```bash
-$ cd controller && ./installDependencies.sh
-
-$ git clone https://github.com/waverleylabs/SDPController.git && yes | cp -rf config.js SDPController/config.js  && cd SDPController && npm install
-
-$ service mysql start && mysql -u root -e "create database sdp;" && mysql -u root sdp < setup.sql && mysql -u root sdp < data.sql
-
-$ ./Gencert.sh
+$ docker-compose up -d
 ```
 
-- Start the SDP Controller:
-
 ```bash
-$ node ./SDPController/sdpController.js
-```
-
-### SDP Gateway
-
-- Install and prepare the SDP Gateway:
-
-```bash
-$ cd gateway && ./installDependencies.sh
-
-$ cp config/access.conf /etc/fwknop/ && cp config/fwknopd.conf /etc/fwknop/ && cp config/gate_sdp_ctrl_client.conf /etc/fwknop/ && cp config/gate.fwknoprc /etc/fwknop/
-```
-
-- Start the SDP Gateway:
-
-```bash
+$ docker exec -it sdp-gateway /bin/bash
 $ fwknopd -f
+
+---
+(sdp_com.c:423) Setting CA cert for peer cert verification.
+(sdp_com.c:622) Starting connection attempt 1
+(sdp_com.c:371) Connected with TLS_AES_256_GCM_SHA384 encryption
+(sdp_com.c:735) Server certificates:
+(sdp_com.c:737) Subject: /C=ES/ST=PA/L=A/O=Uniovi/OU=SE/CN=2/emailAddress=abc@xyz.com
+(sdp_com.c:740) Issuer: /C=ES/ST=PA/L=A/O=Uniovi/OU=SE/CN=PhD/emailAddress=abc@xyz.com
+(sdp_ctrl_client.c:627) Credentials-good message received
+(sdp_message.c:258) Received credential update message
+(sdp_ctrl_client.c:637) Credential update received
+(sdp_ctrl_client.c:1960) All new credentials stored successfully
+(sdp_message.c:272) Received service or access data message
+(sdp_ctrl_client.c:675) Access data update received
 ```
 
-### SDP Client
-
-- Install and prepare the SDP Client:
-
 ```bash
-$ cd client && ./installDependencies.sh
-$ cp .fwknoprc /home/antonio && cp sdp_ctrl_client.conf /home/antonio
-```
+$ docker exec -it sdp-client /bin/bash
+$ /usr/bin/fwknop -n service_gate
 
-- Start the SDP Client:
-
-```bash
-$ fwknopd -n service_gate
+---
+(sdp_com.c:423) Setting CA cert for peer cert verification.
+(sdp_com.c:622) Starting connection attempt 1
+(sdp_com.c:371) Connected with TLS_AES_256_GCM_SHA384 encryption
+(sdp_com.c:735) Server certificates:
+(sdp_com.c:737) Subject: /C=ES/ST=PA/L=A/O=Uniovi/OU=SE/CN=2/emailAddress=abc@xyz.com
+(sdp_com.c:740) Issuer: /C=ES/ST=PA/L=A/O=Uniovi/OU=SE/CN=PhD/emailAddress=abc@xyz.com
+(sdp_ctrl_client.c:627) Credentials-good message received
+(sdp_message.c:258) Received credential update message
+(sdp_ctrl_client.c:637) Credential update received
+(sdp_ctrl_client.c:1960) All new credentials stored successfully
 ```
