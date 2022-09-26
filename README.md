@@ -1,5 +1,9 @@
 # Software-Defined Perimeter
 
+![GitHub LICENSE](https://img.shields.io/github/license/antonioalfa22/Software-Defined-Perimeter?color=green&label=license&logoColor=green)
+![Version](https://img.shields.io/badge/version-1.0.0-green)
+![Environment](https://img.shields.io/badge/environment-docker-blue)
+
 ## Description
 
 This repository contains the code and resources necessary to deploy an architecture based on Software-Defined Perimeters using the open-source implementation made by [WaverleyLabs](https://www.waverleylabs.com/services/software-defined-perimeter-panther-sdp-implementation/). The deployment can be performed both on real machines and devices as well as on a virtualized network architecture using Docker and Docker-Compose to test the functionality of the SDPs.
