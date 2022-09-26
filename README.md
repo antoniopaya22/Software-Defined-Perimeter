@@ -45,7 +45,7 @@ $ cp config/access.conf /etc/fwknop/ && cp config/fwknopd.conf /etc/fwknop/ && c
 - Start the SDP Gateway:
 
 ```bash
-$ fwknopd
+$ fwknopd -f
 ```
 
 ### SDP Client

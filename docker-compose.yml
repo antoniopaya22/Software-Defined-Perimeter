@@ -1,0 +1,89 @@
+version: '3.6'
+
+# //////////////////////////////////////////////////////////////////////////////
+#                                  SERVICES
+# //////////////////////////////////////////////////////////////////////////////
+
+services:
+
+  # ============== SDP DATABASE (MySQL) ==============
+  sdp-db:
+    container_name: sdp-db
+    image: mysql:5.7
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./database:/docker-entrypoint-initdb.d
+    environment:
+      - MYSQL_ROOT_PASSWORD=antonio
+      - MYSQL_DATABASE=sdp
+      - MYSQL_USER=antonio
+      - MYSQL_PASSWORD=antonio
+    networks:
+      - sdp-net
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: pma
+    environment:
+      PMA_HOST: sdp-db
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+    restart: always
+    ports:
+      - 8081:80
+    networks:
+      - sdp-net
+
+  # ============== SDP CONTROLLER ==============
+
+  sdp-controller:
+    container_name: sdp-controller
+    build:
+      context: ./controller
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./data/certs:/controller/certs
+    networks:
+      - sdp-net
+    depends_on:
+      - sdp-db
+
+ # ============== SDP GATEWAY ==============
+
+  sdp-gateway:
+    container_name: sdp-gateway
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    ports:
+      - "4444:4444"
+    volumes:
+      - ./data/certs:/gateway/certs
+    networks:
+      - sdp-net
+    depends_on:
+      - sdp-db
+
+  # ============== SDP CLIENT ============== 
+
+  sdp-client:
+    container_name: sdp-client
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    volumes:
+      - ./data/certs:/client/certs
+    networks:
+      - sdp-net
+    depends_on:
+      - sdp-db
+
+# //////////////////////////////////////////////////////////////////////////////
+#                                  NETWORKS
+# //////////////////////////////////////////////////////////////////////////////
+
+networks:
+  sdp-net: {}

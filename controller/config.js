@@ -22,8 +22,8 @@ module.exports = {
 	'allowLegacyAccessRequests': false,
 
 	// can create these using ./setup/create-certs.sh
-	'serverCert': '/home/antonio/SDP-with-Egida/controller/2.crt',
-	'serverKey':  '/home/antonio/SDP-with-Egida/controller/2.key',
+	'serverCert': '/controller/certs/2.crt',
+	'serverKey':  '/controller/certs/2.key',
 
 	// to be prompted for a password, set this field
 	// to a null string using '' (that's 2 single quotes
@@ -32,8 +32,8 @@ module.exports = {
 	'serverKeyPasswordRequired': true,
 
 	// can create these using ./setup/create-certs.sh
-	'caCert': '/home/antonio/SDP-with-Egida/controller/ca.crt',
-	'caKey': '/home/antonio/SDP-with-Egida/controller/ca.key',
+	'caCert': '/controller/certs/ca.crt',
+	'caKey': '/controller/certs/ca.key',
 
 	// to be prompted for a password, delete this field or
 	// set it to a null string using '' (that's 2 single
@@ -51,9 +51,9 @@ module.exports = {
 	'hmacKeyLen': 128,
 
 	// database options
-	'dbHost': 'localhost',
-	'dbUser': 'root',
-	'dbPasswordRequired': false,
+	'dbHost': 'sdp-db',
+	'dbUser': 'antonio',
+	'dbPasswordRequired': true,
 
 	// to be prompted for a password, delete this field or
 	// set it to a null string using '' (that's 2 single
