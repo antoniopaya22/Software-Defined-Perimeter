@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package grpc;
+
+// Host Services
+service Services {
+  rpc ListAllServices (ListServicesReq) returns (ListService) {}
+  rpc ListRunningServices (ListServicesReq) returns (ListService) {}
+  rpc ListStoppedServices (ListServicesReq) returns (ListService) {}
+  rpc GetService (ServiceNameReq) returns (Service) {}
+}
+
+message Service {
+  string name = 1;
+  string status = 2;
+}
+
+message ListService {
+  repeated Service services = 1;
+}
+
+message ServiceNameReq {
+  string name = 1;
+}
+
+message ListServicesReq {}
+
+
+// Packages
+service Packages {
+  rpc ListAllPackages (ListPackagesReq) returns (ListPackage) {}
+}
+
+message Package {
+  string name = 1;
+}
+
+message ListPackage {
+  repeated Package packages = 1;
+}
+
+message ListPackagesReq {}
+
+
+// Hardening scores
+service HardeningScores {
+  rpc GetLynisScore (ScoreReq) returns (LynisScore) {}
+}
+
+message LynisScore {
+  string score = 1;
+  repeated string log = 2;
+}
+
+message ScoreReq {}
+
+// MachineInfo
+service MachineInfo {
+  rpc ListOpenPorts (ListOpenPortsReq) returns (ListPort) {}
+  rpc MachineHasGUI (HasGUIReq) returns (HasGUI) {}
+}
+
+message Port {
+  int64 number = 1;
+}
+
+message ListPort {
+  repeated Port ports = 1;
+}
+
+message HasGUI {
+  bool gui = 1;
+}
+
+message HasGUIReq {}
+message ListOpenPortsReq {}

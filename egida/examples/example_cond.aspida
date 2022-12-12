@@ -1,0 +1,34 @@
+MAIN : {
+    name: "Test 1";
+    connection: LOCAL;
+    description: "Aspida Test";
+}
+
+HOST : "localhost";
+
+TASKS : {
+    IF "services.ufw" == "stopped"{
+        sections: ["1.1", "1.2"];
+        exclusions : ["1.1.1.3"];
+    }
+    ELIF "hardscores.lynis" <= 50 {
+        points: ["1.1.1.5"];
+    }
+    ELIF "services.apache" == "STOPPED" {
+        points: ["1.1.1.4"];
+    }
+    ELSE {
+        controls: ["9.4"];
+    }
+}
+
+VARS : {
+    "user_ssh": "antonio";
+    "password": {
+        "max_days": 365;
+        "min_days": 7;
+        "warn_age": 7;
+        "inactive": 30;
+    };
+    "nameservers": ["8.8.8.8", "8.8.4.4"];
+}

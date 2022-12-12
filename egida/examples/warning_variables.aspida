@@ -1,0 +1,16 @@
+MAIN : {
+    name: "Warning Variables";
+    connection: LOCAL;
+    description: "Aspida Test";
+}
+
+HOST : "localhost";
+
+TASKS : {
+    IF "machine.open_port" == 24 {
+        sections: ["5.1", "5.3", "5.4"];
+    }
+    ELSE {
+        sections: ["5.1", "5.2", "5.3", "5.4"];
+    }
+}

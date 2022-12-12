@@ -1,0 +1,89 @@
+# defaults file for cis
+
+###############################################
+# Values which modify the behaviour of the role
+###############################################
+
+run_all_level_1: true    # Whether Level 1 of the benchmark should be applied
+run_all_level_2: true    # Whether Level 2 of the benchmark should be applied
+
+# extras: true              # Check if want extras
+
+cis_level_1_exclusions: []         # A list of Level 1 recommendations to exclude (i.e. ['1.1.1.1'])
+cis_level_2_exclusions: []         # A list of Level 2 recommendations to exclude
+
+
+###############################################
+# Check specific values which can be overridden
+###############################################
+
+# ======== 1. Initial Setup ===================
+
+# 1.3.2 AIDE cron settings
+
+aide_cron:
+  cron_user: root
+  cron_file: /etc/crontab
+  aide_job: '/usr/bin/aide.wrapper --check'
+  aide_minute: 0
+  aide_hour: 5
+  aide_day: '*'
+  aide_month: '*'
+  aide_weekday: '*'
+
+# 1.4.2 GRUB Password
+grub_pass: antonio
+
+# 1.4.3 root Password
+root_pass: antonio
+
+# ======== 3. Network configuration ===================
+
+# 3.4.2 Host allow
+host_allow:
+  - "10.0.0.0/255.0.0.0"
+  - "172.16.0.0/255.240.0.0"
+  - "192.168.0.0/255.255.0.0"
+
+# 3.5.2.1 UFW
+
+ufw_ports_allow: ['22']
+ufw_deny_outgoing: false
+
+# ======== 4. Logging and auditing ===================
+default_auditd: true  # Copy auditd template
+
+
+# ======== 5. SSH Server Configuration ===================
+
+sshd_access:
+  ssh_port: 372
+  allowusers: antonio
+  # allowgroups: systems dba
+  # denyusers:
+  # denygroups:
+
+# 5.3.1  Ensure password creation
+pwquality:
+  - key: 'minlen'
+    value: '14'
+  - key: 'dcredit'
+    value: '-1'
+  - key: 'ucredit'
+    value: '-1'
+  - key: 'ocredit'
+    value: '-1'
+  - key: 'lcredit'
+    value: '-1'
+
+# 5.4.1.1 Password
+
+password:
+  max_days: 365
+  min_days: 7
+  warn_age: 7
+  inactive: 30
+
+
+# ======== EXTRAS ===================
+nameservers: [8.8.8.8, 8.8.4.4]

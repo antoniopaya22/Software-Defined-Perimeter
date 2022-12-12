@@ -1,0 +1,6 @@
+site_name: Egida Project
+nav:
+    - Home: index.md
+    - Aspida DSL: dsl.md
+    - About: about.md
+theme: readthedocs
