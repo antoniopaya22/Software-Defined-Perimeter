@@ -1,0 +1,44 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the preprint below."
+title: "Securing the Software-Defined Perimeter Framework with Automated Security Configuration Deployment Systems"
+type: software
+license: Apache-2.0
+repository-code: "https://github.com/antoniopaya22/Software-Defined-Perimeter"
+authors:
+  - family-names: "Payá González"
+    given-names: "Antonio"
+    orcid: "https://orcid.org/0000-0003-3733-3805"
+  - family-names: "Redondo López"
+    given-names: "José Manuel"
+    orcid: "https://orcid.org/0000-0002-0939-0186"
+  - family-names: "García Díaz"
+    given-names: "Vicente"
+    orcid: "https://orcid.org/0000-0003-2037-8548"
+  - family-names: "Gómez Gómez"
+    given-names: "Alberto"
+    orcid: "https://orcid.org/0000-0003-3570-4043"
+keywords:
+  - software-defined perimeter
+  - zero trust
+  - single packet authorization
+preferred-citation:
+  type: article
+  status: preprint
+  title: "Securing the Software-Defined Perimeter Framework with Automated Security Configuration Deployment Systems"
+  authors:
+    - family-names: "Payá González"
+      given-names: "Antonio"
+      orcid: "https://orcid.org/0000-0003-3733-3805"
+    - family-names: "Redondo López"
+      given-names: "José Manuel"
+      orcid: "https://orcid.org/0000-0002-0939-0186"
+    - family-names: "García Díaz"
+      given-names: "Vicente"
+      orcid: "https://orcid.org/0000-0003-2037-8548"
+    - family-names: "Gómez Gómez"
+      given-names: "Alberto"
+      orcid: "https://orcid.org/0000-0003-3570-4043"
+  journal: "SSRN Electronic Journal"
+  year: 2023
+  doi: "10.2139/ssrn.4326496"
+  url: "https://doi.org/10.2139/ssrn.4326496"
