@@ -1,10 +1,14 @@
 # Software-Defined Perimeter
 
-![GitHub LICENSE](https://img.shields.io/github/license/antonioalfa22/Software-Defined-Perimeter?color=green&label=license&logoColor=green)
+[![Preprint](https://img.shields.io/badge/DOI-10.2139%2Fssrn.4326496-0E7490)](https://doi.org/10.2139/ssrn.4326496)
+![GitHub LICENSE](https://img.shields.io/github/license/antoniopaya22/Software-Defined-Perimeter?color=green&label=license&logoColor=green)
 ![Version](https://img.shields.io/badge/version-1.0.0-green)
 ![Environment](https://img.shields.io/badge/environment-docker-blue)
 
 ## Description
+
+Code for the preprint **[Securing the Software-Defined Perimeter Framework with Automated Security Configuration Deployment Systems](https://doi.org/10.2139/ssrn.4326496)** (SSRN, 2023).
+
 
 This repository contains the code and resources necessary to deploy an architecture based on Software-Defined Perimeters using the open-source implementation made by [WaverleyLabs](https://www.waverleylabs.com/services/software-defined-perimeter-panther-sdp-implementation/). The deployment can be performed both on real machines and devices as well as on a virtualized network architecture using Docker and Docker-Compose to test the functionality of the SDPs.
 
@@ -124,3 +128,19 @@ $ /usr/bin/fwknop -n service_gate
 (sdp_ctrl_client.c:637) Credential update received
 (sdp_ctrl_client.c:1960) All new credentials stored successfully
 ```
+
+## Citation
+
+```bibtex
+@misc{paya2023securing,
+  title  = {Securing the Software-Defined Perimeter Framework with Automated Security Configuration Deployment Systems},
+  author = {Pay{\'a} Gonz{\'a}lez, Antonio and Redondo L{\'o}pez, Jos{\'e} Manuel and Garc{\'i}a D{\'i}az, Vicente and G{\'o}mez G{\'o}mez, Alberto},
+  year   = {2023},
+  note   = {SSRN preprint},
+  doi    = {10.2139/ssrn.4326496}
+}
+```
+
+## License
+
+[Apache 2.0](LICENSE)
