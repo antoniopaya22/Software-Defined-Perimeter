@@ -35,7 +35,7 @@
       <!-- Interactive flow -->
       <figure class="lp-flow" aria-labelledby="lp-flow-caption">
         <div class="lp-flow__canvas">
-          <svg class="lp-diagram" viewBox="0 0 640 360" role="img" aria-labelledby="lp-diagram-title">
+          <svg class="lp-diagram" data-flow="sdp" viewBox="0 0 640 360" role="img" aria-labelledby="lp-diagram-title">
             <title id="lp-diagram-title">Access flow of the Software-Defined Perimeter lab</title>
             <defs>
               <marker id="lp-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
@@ -54,6 +54,16 @@
             <line id="lp-l-gw-svc"   x1="386" y1="202" x2="466" y2="202" class="lp-d-link"/>
             <text x="332" y="138" class="lp-d-linklabel">mTLS · access list</text>
             <text x="118" y="112" class="lp-d-linklabel" transform="rotate(-32 118 112)">mTLS · credentials</text>
+
+            <!-- moving parts -->
+            <circle id="lp-p-attempt" r="6" cx="172" cy="202" class="lp-d-pkt lp-d-pkt--deny" opacity="0"/>
+            <g id="lp-p-drop" opacity="0" transform="translate(236 202)">
+              <path d="M-6 -6 6 6M6 -6-6 6" class="lp-d-drop"/>
+            </g>
+            <circle id="lp-p-policy" r="6" cx="320" cy="96" class="lp-d-pkt lp-d-pkt--ctrl" opacity="0"/>
+            <circle id="lp-p-cred" r="6" cx="110" cy="170" class="lp-d-pkt lp-d-pkt--ctrl" opacity="0"/>
+            <circle id="lp-p-spa" r="7" cx="172" cy="202" class="lp-d-pkt lp-d-pkt--spa" opacity="0"/>
+            <circle id="lp-p-data" r="6" cx="172" cy="202" class="lp-d-pkt lp-d-pkt--ok" opacity="0"/>
 
             <!-- nodes -->
             <g class="lp-d-node" id="lp-n-ctrl">
@@ -84,16 +94,6 @@
               <g id="lp-badge-open" opacity="0"><rect x="-5" y="-2" width="10" height="8" rx="1.5" class="lp-d-badge-icon"/><path d="M-3 -2v-3a3 3 0 0 1 6 0" class="lp-d-badge-stroke"/></g>
             </g>
 
-            <!-- moving parts -->
-            <circle id="lp-p-attempt" r="6" cx="172" cy="202" class="lp-d-pkt lp-d-pkt--deny" opacity="0"/>
-            <g id="lp-p-drop" opacity="0" transform="translate(236 202)">
-              <path d="M-6 -6 6 6M6 -6-6 6" class="lp-d-drop"/>
-            </g>
-            <circle id="lp-p-policy" r="6" cx="320" cy="96" class="lp-d-pkt lp-d-pkt--ctrl" opacity="0"/>
-            <circle id="lp-p-cred" r="6" cx="110" cy="170" class="lp-d-pkt lp-d-pkt--ctrl" opacity="0"/>
-            <circle id="lp-p-spa" r="7" cx="172" cy="202" class="lp-d-pkt lp-d-pkt--spa" opacity="0"/>
-            <circle id="lp-p-data" r="6" cx="172" cy="202" class="lp-d-pkt lp-d-pkt--ok" opacity="0"/>
-
             <text id="lp-status" x="42" y="330" class="lp-d-status">iptables: INPUT DROP · FORWARD DROP</text>
           </svg>
         </div>
@@ -109,11 +109,11 @@
             </button>
           </div>
           <ol class="lp-steps" role="list">
-            <li><button type="button" data-step="0" aria-current="step"><span class="lp-steps__n">1</span><span class="lp-steps__t">Gateway enrolls</span><span class="lp-steps__d">The gateway connects to the controller over mutual TLS and receives the service and access lists.</span></button></li>
-            <li><button type="button" data-step="1"><span class="lp-steps__n">2</span><span class="lp-steps__t">Hidden by default</span><span class="lp-steps__d">Any connection to the protected port is dropped. Scanners get no reply.</span></button></li>
-            <li><button type="button" data-step="2"><span class="lp-steps__n">3</span><span class="lp-steps__t">Single packet</span><span class="lp-steps__d">The client sends one encrypted, HMAC-authenticated SPA packet naming its identity and service.</span></button></li>
-            <li><button type="button" data-step="3"><span class="lp-steps__n">4</span><span class="lp-steps__t">Verified and opened</span><span class="lp-steps__d">The gateway checks the packet against the access list and opens a rule for that client's address only.</span></button></li>
-            <li><button type="button" data-step="4"><span class="lp-steps__n">5</span><span class="lp-steps__t">Connected</span><span class="lp-steps__d">Traffic reaches the service through the gateway; the client rotates its keys with the controller.</span></button></li>
+            <li><button type="button" data-step="0" data-status="controller → gateway: access list (SDP ID 3 → service 1)" aria-current="step"><span class="lp-steps__n">1</span><span class="lp-steps__t">Gateway enrolls</span><span class="lp-steps__d">The gateway connects to the controller over mutual TLS and receives the service and access lists.</span></button></li>
+            <li><button type="button" data-step="1" data-status="iptables: DROP 10.231.0.40 → :8080 (no rule)"><span class="lp-steps__n">2</span><span class="lp-steps__t">Hidden by default</span><span class="lp-steps__d">Any connection to the protected port is dropped. Scanners get no reply.</span></button></li>
+            <li><button type="button" data-step="2" data-status="SPA: udp/62201 · AES + HMAC · SDP ID 3, service 1"><span class="lp-steps__n">3</span><span class="lp-steps__t">Single packet</span><span class="lp-steps__d">The client sends one encrypted, HMAC-authenticated SPA packet naming its identity and service.</span></button></li>
+            <li><button type="button" data-step="3" data-status="fwknopd: DNAT :8080 → 10.231.1.30:80 for 10.231.0.40 · 30 s"><span class="lp-steps__n">4</span><span class="lp-steps__t">Verified and opened</span><span class="lp-steps__d">The gateway checks the packet against the access list and opens a rule for that client's address only.</span></button></li>
+            <li><button type="button" data-step="4" data-status="HTTP 200 · keys rotated with the controller"><span class="lp-steps__n">5</span><span class="lp-steps__t">Connected</span><span class="lp-steps__d">Traffic reaches the service through the gateway; the client rotates its keys with the controller.</span></button></li>
           </ol>
         </figcaption>
       </figure>
