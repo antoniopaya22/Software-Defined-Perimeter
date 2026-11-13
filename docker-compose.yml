@@ -101,7 +101,7 @@ services:
   # ============== PROTECTED SERVICE (Accepting Host) ==============
   protected-service:
     <<: *defaults
-    image: nginx:1.27-alpine
+    image: nginx:1.31-alpine
     networks:
       sdp-private:
         ipv4_address: ${PROTECTED_SERVICE_IP:-10.231.1.30}
