@@ -22,9 +22,11 @@ updates:
     schedule:
       interval: weekly
     ignore:
-      # Stay on the MariaDB LTS series; move to the next LTS deliberately.
+      # Stay on the MariaDB LTS series (11.4); only take patch releases.
+      # Short-term releases (11.5-11.7, 12.x) are skipped; move to the next
+      # LTS deliberately.
       - dependency-name: mariadb
-        update-types: ["version-update:semver-major"]
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
 
   - package-ecosystem: github-actions
     directory: /
