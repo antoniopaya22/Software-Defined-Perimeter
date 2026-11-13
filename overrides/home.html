@@ -1,0 +1,37 @@
+{#- Landing page. Configure it from the page front matter:
+    hero: { eyebrow, title, lead, buttons: [{text, link}], meta: [text] }  -#}
+{% extends "main.html" %}
+
+{% block tabs %}
+  {{ super() }}
+  {% set hero = page.meta.hero %}
+  <section class="sdp-hero" data-md-color-scheme="slate">
+    <div class="sdp-hero__inner md-grid">
+      <div class="sdp-hero__copy">
+        {% if hero.eyebrow %}<p class="sdp-hero__eyebrow">{{ hero.eyebrow }}</p>{% endif %}
+        <h1 class="sdp-hero__title">{{ hero.title }}</h1>
+        <p class="sdp-hero__lead">{{ hero.lead }}</p>
+        <div class="sdp-hero__actions md-typeset">
+          {% for button in hero.buttons %}
+            {% set href = button.link if button.link.startswith("http") else (button.link | url) %}
+            <a href="{{ href }}" class="md-button{% if loop.first %} md-button--primary{% endif %}">{{ button.text }}</a>
+          {% endfor %}
+        </div>
+        {% if hero.meta %}
+          <ul class="sdp-hero__meta">
+            {% for item in hero.meta %}<li>{{ item }}</li>{% endfor %}
+          </ul>
+        {% endif %}
+      </div>
+      <div class="sdp-hero__visual">
+        {% include "partials/spa-visual.html" %}
+      </div>
+    </div>
+  </section>
+{% endblock %}
+
+{% block content %}
+  <div class="sdp-home md-typeset">
+    {{ page.content }}
+  </div>
+{% endblock %}
