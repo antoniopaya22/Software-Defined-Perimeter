@@ -1,295 +1,375 @@
-{#- Landing page for the Software-Defined Perimeter Lab.
-    Shared assets: docs/stylesheets/extra.css, docs/javascripts/landing.js -#}
+{#- Landing page. Design system shared with the Apollon and SecureSDP sites:
+    docs/stylesheets/landing.css + docs/javascripts/home.js (only loaded here). -#}
 {% extends "main.html" %}
 
-{% block tabs %}
+{% block extrahead %}
 {{ super() }}
-<div class="lp" data-landing>
+<link rel="stylesheet" href="{{ 'stylesheets/landing.css' | url }}">
+{% endblock %}
 
-  <!-- ===================== Hero ===================== -->
-  <section class="lp-hero" id="overview" aria-labelledby="lp-title">
+{% block header %}
+<header class="lp-nav" id="lp-nav" data-md-component="header">
+  <div class="lp-wrap lp-nav__in">
+    <a class="lp-brand" href="{{ '.' | url }}">
+      <img src="{{ 'assets/logo.svg' | url }}" alt="" width="26" height="26">
+      <span>SDP Lab</span>
+    </a>
+    <nav class="lp-nav__links" aria-label="Main">
+      <a href="#how">How it works</a>
+      <a href="{{ 'getting-started/' | url }}">Docs</a>
+      <a href="{{ 'architecture/' | url }}">Architecture</a>
+      <a href="#eval">Results</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="lp-nav__cta">
+      <a class="lp-btn lp-btn--line lp-hide-sm" href="{{ config.repo_url }}">{% include ".icons/fontawesome/brands/github.svg" %} GitHub</a>
+      <a class="lp-btn lp-btn--primary" href="{{ 'getting-started/' | url }}">Get started</a>
+    </div>
+  </div>
+</header>
+{% endblock %}
+
+{% block site_nav %}{% endblock %}
+{% block container %}{% endblock %}
+
+{% block tabs %}
+<div class="lp" id="lp">
+
+  <nav class="lp-dots" aria-label="Sections">
+    <a href="#top" data-dot="top" aria-label="Top"></a>
+    <a href="#problem" data-dot="problem" aria-label="The problem"></a>
+    <a href="#how" data-dot="how" aria-label="How it works"></a>
+    <a href="#build" data-dot="build" aria-label="Run it"></a>
+    <a href="#eval" data-dot="eval" aria-label="Results"></a>
+    <a href="#faq" data-dot="faq" aria-label="FAQ"></a>
+  </nav>
+
+  <!-- =========================================================== HERO -->
+  <section class="lp-sec lp-dark lp-hero" id="top">
     <div class="lp-wrap lp-hero__grid">
-      <div class="lp-hero__copy">
-        <p class="lp-tag">Companion lab of <a href="https://doi.org/10.1007/s10207-024-00863-7">SecureSDP · IJIS 2024</a></p>
-        <h1 id="lp-title" class="lp-hero__title">One packet opens the door.</h1>
-        <p class="lp-hero__lead">
-          A reproducible Software-Defined Perimeter in Docker Compose. Services stay hidden
-          behind a default-deny gateway until a client authenticates with a single encrypted packet.
-        </p>
-        <div class="lp-actions" data-reveal>
-          <a class="lp-btn lp-btn--primary" href="{{ 'getting-started/' | url }}">Get started</a>
-          <a class="lp-btn" href="{{ 'architecture/' | url }}">Architecture</a>
-          <a class="lp-btn lp-btn--ghost" href="{{ config.repo_url }}">
-            {% include ".icons/fontawesome/brands/github.svg" %}<span>Source</span>
-          </a>
+      <div>
+        <p class="lp-eyebrow">Software-Defined Perimeter lab</p>
+        <h1 class="lp-display">One packet <br>opens the door<i>.</i></h1>
+        <p class="lp-lead">Services stay invisible behind a default-deny gateway. A client
+        sends one encrypted, authenticated packet; the gateway opens a path for that client
+        alone, for thirty seconds.</p>
+        <div class="lp-row">
+          <a class="lp-btn lp-btn--primary lp-btn--lg" href="{{ 'getting-started/' | url }}">Get started</a>
+          <a class="lp-btn lp-btn--line lp-btn--lg" href="https://doi.org/10.1007/s10207-024-00863-7">Read the paper ↗</a>
         </div>
-        <dl class="lp-facts" data-reveal>
-          <div><dt>Runs on</dt><dd>Docker</dd></div>
-          <div><dt>Containers</dt><dd>5</dd></div>
-          <div><dt>Access window</dt><dd>30 s</dd></div>
-          <div><dt>License</dt><dd>Apache-2.0</dd></div>
-        </dl>
+        <ul class="lp-facts">
+          <li><b>Published</b> as SecureSDP in the International Journal of Information Security, 2024</li>
+          <li><b>Five containers</b> on three networks, one <code>docker compose up</code></li>
+          <li><b>Tested</b> end to end in CI on every change</li>
+        </ul>
       </div>
 
-      <!-- Interactive flow -->
-      <figure class="lp-flow" aria-labelledby="lp-flow-caption">
-        <div class="lp-flow__canvas">
-          <svg class="lp-diagram" data-flow="sdp" viewBox="0 0 640 360" role="img" aria-labelledby="lp-diagram-title">
-            <title id="lp-diagram-title">Access flow of the Software-Defined Perimeter lab</title>
-            <defs>
-              <marker id="lp-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-                <path d="M0 0 10 5 0 10z" class="lp-d-arrow"/>
-              </marker>
-            </defs>
+      <figure class="lp-card lp-hero__viz" aria-label="Animation of the access flow: the gateway enrolls with the controller, a connection attempt is dropped, the client sends a single SPA packet and the gateway opens a path to the hidden service.">
+        <div class="lp-card__head"><span class="lp-live"></span>Access flow<span class="lp-card__tag">Simulation of the lab</span></div>
+        <svg class="lp-diagram" data-flow="sdp" viewBox="0 0 640 340" role="img" aria-label="Access flow diagram">
+          <rect x="438" y="132" width="186" height="140" rx="12" class="lp-d-zone"/>
+          <text x="531" y="152" class="lp-d-zone-label" text-anchor="middle">private network</text>
+          <line id="lp-l-ctrl-gw"  x1="320" y1="96"  x2="320" y2="170" class="lp-d-link"/>
+          <line id="lp-l-cl-ctrl"  x1="110" y1="170" x2="255" y2="78"  class="lp-d-link lp-d-link--dash"/>
+          <line id="lp-l-cl-gw"    x1="172" y1="202" x2="254" y2="202" class="lp-d-link"/>
+          <line id="lp-l-gw-svc"   x1="386" y1="202" x2="466" y2="202" class="lp-d-link"/>
+          <text x="332" y="138" class="lp-d-linklabel">mTLS · access list</text>
+          <text x="118" y="112" class="lp-d-linklabel" transform="rotate(-32 118 112)">mTLS · credentials</text>
 
-            <!-- private network -->
-            <rect x="438" y="132" width="186" height="140" rx="12" class="lp-d-zone"/>
-            <text x="531" y="152" class="lp-d-zone-label" text-anchor="middle">Private network</text>
+          <circle id="lp-p-attempt" r="6" cx="172" cy="202" class="lp-d-pkt lp-d-pkt--deny" opacity="0"/>
+          <g id="lp-p-drop" opacity="0" transform="translate(236 202)"><path d="M-6 -6 6 6M6 -6-6 6" class="lp-d-drop"/></g>
+          <circle id="lp-p-policy" r="6" cx="320" cy="96" class="lp-d-pkt lp-d-pkt--ctrl" opacity="0"/>
+          <circle id="lp-p-cred" r="6" cx="110" cy="170" class="lp-d-pkt lp-d-pkt--ctrl" opacity="0"/>
+          <circle id="lp-p-spa" r="7" cx="172" cy="202" class="lp-d-pkt lp-d-pkt--spa" opacity="0"/>
+          <circle id="lp-p-data" r="6" cx="172" cy="202" class="lp-d-pkt lp-d-pkt--ok" opacity="0"/>
 
-            <!-- links -->
-            <line id="lp-l-ctrl-gw"  x1="320" y1="96"  x2="320" y2="170" class="lp-d-link"/>
-            <line id="lp-l-cl-ctrl"  x1="110" y1="170" x2="255" y2="78"  class="lp-d-link lp-d-link--dash"/>
-            <line id="lp-l-cl-gw"    x1="172" y1="202" x2="254" y2="202" class="lp-d-link"/>
-            <line id="lp-l-gw-svc"   x1="386" y1="202" x2="466" y2="202" class="lp-d-link"/>
-            <text x="332" y="138" class="lp-d-linklabel">mTLS · access list</text>
-            <text x="118" y="112" class="lp-d-linklabel" transform="rotate(-32 118 112)">mTLS · credentials</text>
+          <g class="lp-d-node" id="lp-n-ctrl"><rect x="255" y="32" width="130" height="64" rx="10"/>
+            <text x="320" y="60" text-anchor="middle" class="lp-d-title">Controller</text>
+            <text x="320" y="78" text-anchor="middle" class="lp-d-sub">policy · PKI</text></g>
+          <g class="lp-d-node" id="lp-n-client"><rect x="42" y="170" width="130" height="64" rx="10"/>
+            <text x="107" y="198" text-anchor="middle" class="lp-d-title">Client</text>
+            <text x="107" y="216" text-anchor="middle" class="lp-d-sub">initiating host</text></g>
+          <g class="lp-d-node" id="lp-n-gw"><rect x="255" y="170" width="130" height="64" rx="10"/>
+            <text x="320" y="198" text-anchor="middle" class="lp-d-title">Gateway</text>
+            <text x="320" y="216" text-anchor="middle" class="lp-d-sub">fwknop · iptables</text></g>
+          <g class="lp-d-node lp-d-node--svc" id="lp-n-svc"><rect x="466" y="170" width="130" height="64" rx="10"/>
+            <text x="531" y="198" text-anchor="middle" class="lp-d-title">Service</text>
+            <text x="531" y="216" text-anchor="middle" class="lp-d-sub">nginx · hidden</text></g>
 
-            <!-- moving parts -->
-            <circle id="lp-p-attempt" r="6" cx="172" cy="202" class="lp-d-pkt lp-d-pkt--deny" opacity="0"/>
-            <g id="lp-p-drop" opacity="0" transform="translate(236 202)">
-              <path d="M-6 -6 6 6M6 -6-6 6" class="lp-d-drop"/>
-            </g>
-            <circle id="lp-p-policy" r="6" cx="320" cy="96" class="lp-d-pkt lp-d-pkt--ctrl" opacity="0"/>
-            <circle id="lp-p-cred" r="6" cx="110" cy="170" class="lp-d-pkt lp-d-pkt--ctrl" opacity="0"/>
-            <circle id="lp-p-spa" r="7" cx="172" cy="202" class="lp-d-pkt lp-d-pkt--spa" opacity="0"/>
-            <circle id="lp-p-data" r="6" cx="172" cy="202" class="lp-d-pkt lp-d-pkt--ok" opacity="0"/>
-
-            <!-- nodes -->
-            <g class="lp-d-node" id="lp-n-ctrl">
-              <rect x="255" y="32" width="130" height="64" rx="10"/>
-              <text x="320" y="60" text-anchor="middle" class="lp-d-title">Controller</text>
-              <text x="320" y="78" text-anchor="middle" class="lp-d-sub">policy · PKI</text>
-            </g>
-            <g class="lp-d-node" id="lp-n-client">
-              <rect x="42" y="170" width="130" height="64" rx="10"/>
-              <text x="107" y="198" text-anchor="middle" class="lp-d-title">Client</text>
-              <text x="107" y="216" text-anchor="middle" class="lp-d-sub">initiating host</text>
-            </g>
-            <g class="lp-d-node" id="lp-n-gw">
-              <rect x="255" y="170" width="130" height="64" rx="10"/>
-              <text x="320" y="198" text-anchor="middle" class="lp-d-title">Gateway</text>
-              <text x="320" y="216" text-anchor="middle" class="lp-d-sub">fwknop · iptables</text>
-            </g>
-            <g class="lp-d-node lp-d-node--svc" id="lp-n-svc">
-              <rect x="466" y="170" width="130" height="64" rx="10"/>
-              <text x="531" y="198" text-anchor="middle" class="lp-d-title">Service</text>
-              <text x="531" y="216" text-anchor="middle" class="lp-d-sub">nginx · hidden</text>
-            </g>
-
-            <!-- gateway state badge -->
-            <g id="lp-badge" transform="translate(372 160)">
-              <circle r="13" class="lp-d-badge"/>
-              <g id="lp-badge-closed"><rect x="-5" y="-2" width="10" height="8" rx="1.5" class="lp-d-badge-icon"/><path d="M-3 -2v-3a3 3 0 0 1 6 0v3" class="lp-d-badge-stroke"/></g>
-              <g id="lp-badge-open" opacity="0"><rect x="-5" y="-2" width="10" height="8" rx="1.5" class="lp-d-badge-icon"/><path d="M-3 -2v-3a3 3 0 0 1 6 0" class="lp-d-badge-stroke"/></g>
-            </g>
-
-            <text id="lp-status" x="42" y="330" class="lp-d-status">iptables: INPUT DROP · FORWARD DROP</text>
-          </svg>
-        </div>
-
-        <figcaption id="lp-flow-caption" class="lp-flow__panel">
-          <div class="lp-flow__controls">
-            <span class="lp-flow__label">How access works</span>
-            <button type="button" class="lp-icon-btn" data-flow="toggle" aria-label="Pause animation">
-              <span class="lp-i-pause" aria-hidden="true"></span>
-            </button>
-            <button type="button" class="lp-icon-btn" data-flow="restart" aria-label="Restart animation">
-              <span class="lp-i-restart" aria-hidden="true"></span>
-            </button>
-          </div>
-          <ol class="lp-steps" role="list">
-            <li><button type="button" data-step="0" data-status="controller → gateway: access list (SDP ID 3 → service 1)" aria-current="step"><span class="lp-steps__n">1</span><span class="lp-steps__t">Gateway enrolls</span><span class="lp-steps__d">The gateway connects to the controller over mutual TLS and receives the service and access lists.</span></button></li>
-            <li><button type="button" data-step="1" data-status="iptables: DROP 10.231.0.40 → :8080 (no rule)"><span class="lp-steps__n">2</span><span class="lp-steps__t">Hidden by default</span><span class="lp-steps__d">Any connection to the protected port is dropped. Scanners get no reply.</span></button></li>
-            <li><button type="button" data-step="2" data-status="SPA: udp/62201 · AES + HMAC · SDP ID 3, service 1"><span class="lp-steps__n">3</span><span class="lp-steps__t">Single packet</span><span class="lp-steps__d">The client sends one encrypted, HMAC-authenticated SPA packet naming its identity and service.</span></button></li>
-            <li><button type="button" data-step="3" data-status="fwknopd: DNAT :8080 → 10.231.1.30:80 for 10.231.0.40 · 30 s"><span class="lp-steps__n">4</span><span class="lp-steps__t">Verified and opened</span><span class="lp-steps__d">The gateway checks the packet against the access list and opens a rule for that client's address only.</span></button></li>
-            <li><button type="button" data-step="4" data-status="HTTP 200 · keys rotated with the controller"><span class="lp-steps__n">5</span><span class="lp-steps__t">Connected</span><span class="lp-steps__d">Traffic reaches the service through the gateway; the client rotates its keys with the controller.</span></button></li>
+          <g id="lp-badge" transform="translate(372 160)">
+            <circle r="13" class="lp-d-badge"/>
+            <g id="lp-badge-closed"><rect x="-5" y="-2" width="10" height="8" rx="1.5" class="lp-d-badge-icon"/><path d="M-3 -2v-3a3 3 0 0 1 6 0v3" class="lp-d-badge-stroke"/></g>
+            <g id="lp-badge-open" opacity="0"><rect x="-5" y="-2" width="10" height="8" rx="1.5" class="lp-d-badge-icon"/><path d="M-3 -2v-3a3 3 0 0 1 6 0" class="lp-d-badge-stroke"/></g>
+          </g>
+          <text id="lp-status" x="42" y="312" class="lp-d-status">iptables: INPUT DROP · FORWARD DROP</text>
+        </svg>
+        <div class="lp-flow__bar">
+          <ol class="lp-flow__steps" aria-label="Steps">
+            <li><button type="button" data-step="0" aria-current="step" data-status="controller → gateway: access list (SDP ID 3 → service 1)" data-caption="The gateway connects to the controller over mutual TLS and receives the service and access lists.">1 Enroll</button></li>
+            <li><button type="button" data-step="1" data-status="iptables: DROP 10.231.0.40 → :8080 (no rule)" data-caption="Any connection to the protected port is dropped. Scanners get no reply.">2 Hidden</button></li>
+            <li><button type="button" data-step="2" data-status="SPA udp/62201 · AES + HMAC · SDP ID 3, service 1" data-caption="The client sends one encrypted, HMAC-authenticated packet naming its identity and service.">3 Knock</button></li>
+            <li><button type="button" data-step="3" data-status="fwknopd: DNAT :8080 → 10.231.1.30:80 for 10.231.0.40 · 30 s" data-caption="The gateway checks the packet against its access list and opens a rule for that client's address only.">4 Open</button></li>
+            <li><button type="button" data-step="4" data-status="HTTP 200 · keys rotated with the controller" data-caption="Traffic reaches the service through the gateway; the client rotates its keys with the controller.">5 Connect</button></li>
           </ol>
-        </figcaption>
+          <div class="lp-flow__ctl">
+            <button type="button" data-flow="toggle" aria-label="Pause animation">❚❚</button>
+            <button type="button" data-flow="restart" aria-label="Restart animation">↺</button>
+          </div>
+        </div>
+        <p class="lp-flow__caption" id="lp-flow-caption" aria-live="polite">The gateway connects to the controller over mutual TLS and receives the service and access lists.</p>
       </figure>
     </div>
-  </section>
-
-  <!-- ===================== Components ===================== -->
-  <section class="lp-section" id="components" aria-labelledby="lp-components">
     <div class="lp-wrap">
-      <header class="lp-head" data-reveal>
-        <p class="lp-eyebrow">Architecture</p>
-        <h2 id="lp-components">Five containers, three networks</h2>
-        <p>The lab follows the Cloud Security Alliance SDP model. Every component runs pinned upstream code, and credentials are generated at runtime.</p>
-      </header>
-      <div class="lp-cards">
-        <article class="lp-card" data-reveal>
-          <span class="lp-card__icon">{% include ".icons/material/shield-key-outline.svg" %}</span>
-          <h3>SDP Controller</h3>
-          <p>Waverley Labs controller. Runs the PKI, authenticates every member with mutual TLS and pushes service and access lists.</p>
-          <code>sdp-controller</code>
-        </article>
-        <article class="lp-card" data-reveal>
-          <span class="lp-card__icon">{% include ".icons/material/wall-fire.svg" %}</span>
-          <h3>SDP Gateway</h3>
-          <p>fwknop behind a default-deny iptables firewall. Opens time-limited DNAT and FORWARD rules per authorized client.</p>
-          <code>sdp-gateway</code>
-        </article>
-        <article class="lp-card" data-reveal>
-          <span class="lp-card__icon">{% include ".icons/material/laptop.svg" %}</span>
-          <h3>Initiating Host</h3>
-          <p>The client. Sends SPA packets with fwknop and refreshes its credentials with the controller.</p>
-          <code>sdp-client</code>
-        </article>
-        <article class="lp-card" data-reveal>
-          <span class="lp-card__icon">{% include ".icons/material/server-network.svg" %}</span>
-          <h3>Accepting Host</h3>
-          <p>An nginx service on an internal network, reachable only through the gateway.</p>
-          <code>protected-service</code>
-        </article>
-        <article class="lp-card" data-reveal>
-          <span class="lp-card__icon">{% include ".icons/material/database-outline.svg" %}</span>
-          <h3>Policy database</h3>
-          <p>MariaDB with members, services and permissions, on a management network with no host access.</p>
-          <code>sdp-db</code>
-        </article>
-      </div>
-      <p class="lp-more" data-reveal><a href="{{ 'architecture/' | url }}">Networks, sequences and design choices →</a></p>
-    </div>
-  </section>
-
-  <!-- ===================== Quick start ===================== -->
-  <section class="lp-section lp-section--soft" id="quick-start" aria-labelledby="lp-qs">
-    <div class="lp-wrap lp-split">
-      <header class="lp-head" data-reveal>
-        <p class="lp-eyebrow">Quick start</p>
-        <h2 id="lp-qs">Up in three commands</h2>
-        <p>Requires Linux and Docker Engine 26 or newer. The demo script checks the whole flow and exits non-zero if anything fails; CI runs it on every pull request.</p>
-        <p><a href="{{ 'getting-started/' | url }}">Full getting-started guide →</a></p>
-      </header>
-      <div class="lp-commands" data-reveal>
-        <div class="lp-cmd">
-          <span class="lp-cmd__n">1</span>
-          <div class="lp-cmd__body"><span class="lp-cmd__label">Configure secrets</span><code>cp .env.example .env</code></div>
-          <button type="button" class="lp-copy" data-copy="cp .env.example .env" aria-label="Copy command">Copy</button>
-        </div>
-        <div class="lp-cmd">
-          <span class="lp-cmd__n">2</span>
-          <div class="lp-cmd__body"><span class="lp-cmd__label">Build and start</span><code>docker compose up -d --build --wait</code></div>
-          <button type="button" class="lp-copy" data-copy="docker compose up -d --build --wait" aria-label="Copy command">Copy</button>
-        </div>
-        <div class="lp-cmd">
-          <span class="lp-cmd__n">3</span>
-          <div class="lp-cmd__body"><span class="lp-cmd__label">Run the end-to-end check</span><code>./scripts/demo.sh</code></div>
-          <button type="button" class="lp-copy" data-copy="./scripts/demo.sh" aria-label="Copy command">Copy</button>
-        </div>
-        <pre class="lp-output" aria-label="Expected output"><span class="ok">PASS</span> service hidden before SPA
-<span class="ok">PASS</span> private network unreachable from the client
-<span class="ok">PASS</span> SPA accepted, controller session completed
-<span class="ok">PASS</span> protected service returns HTTP 200
-All checks passed.</pre>
+      <div class="lp-strip">
+        <div><span>Where</span><b>In front of any TCP service</b></div>
+        <div><span>What it stops</span><b>Scans and unsolicited connections</b></div>
+        <div><span>Cost</span><b>One UDP packet per session</b></div>
       </div>
     </div>
   </section>
 
-  <!-- ===================== Results ===================== -->
-  <section class="lp-section" id="results" aria-labelledby="lp-results">
-    <div class="lp-wrap lp-split">
-      <header class="lp-head" data-reveal>
-        <p class="lp-eyebrow">Results</p>
-        <h2 id="lp-results">Hardening each component</h2>
-        <p>SecureSDP also hardens every SDP component with <a href="https://github.com/Egida-Kassandra/egida">Egida</a>. The paper audited the controller before and after applying the controls.</p>
-        <p class="lp-note">Scores as reported in Payá et al., IJIS 2024, Table 2. Not regenerated with this lab. <a href="{{ 'hardening/' | url }}">Details →</a></p>
-      </header>
-      <div class="lp-bars" data-reveal>
-        <div class="lp-bars__legend"><span class="is-before">Default</span><span class="is-after">With Egida controls</span></div>
-        {% for name, before, after in [("Lynis", 52.00, 86.00), ("Chef InSpec", 36.17, 64.25), ("OpenSCAP", 63.52, 82.94)] %}
-        <div class="lp-bar">
-          <div class="lp-bar__name">{{ name }}<span>+{{ ((after / before - 1) * 100) | round | int }}%</span></div>
-          <div class="lp-bar__track" aria-hidden="true">
-            <div class="lp-bar__fill is-before" style="--v: {{ before }}%"></div>
-          </div>
-          <div class="lp-bar__track" aria-hidden="true">
-            <div class="lp-bar__fill is-after" style="--v: {{ after }}%"></div>
-          </div>
-          <div class="lp-bar__values">{{ "%.1f" | format(before) }}% → <strong>{{ "%.1f" | format(after) }}%</strong></div>
-        </div>
-        {% endfor %}
-      </div>
-    </div>
-  </section>
-
-  <!-- ===================== Research ===================== -->
-  <section class="lp-section lp-section--soft" id="research" aria-labelledby="lp-research">
+  <!-- ======================================================== PROBLEM -->
+  <section class="lp-sec lp-light" id="problem">
     <div class="lp-wrap">
-      <header class="lp-head" data-reveal>
-        <p class="lp-eyebrow">Research</p>
-        <h2 id="lp-research">Cite this work</h2>
-      </header>
-      <div class="lp-paper" data-reveal>
-        <div class="lp-paper__meta">
-          <p class="lp-paper__venue">International Journal of Information Security · 23(4), 2793–2808 · 2024</p>
-          <h3>SecureSDP: a novel software-defined perimeter implementation for enhanced network security and scalability</h3>
-          <p class="lp-paper__authors">Antonio Payá, Vicente García-Díaz, Alberto Gómez</p>
-          <div class="lp-actions">
-            <a class="lp-btn lp-btn--primary" href="https://doi.org/10.1007/s10207-024-00863-7">Read the paper</a>
-            <button type="button" class="lp-btn" data-copy-target="lp-bibtex">Copy BibTeX</button>
-            <a class="lp-btn lp-btn--ghost" href="{{ 'research/' | url }}">More</a>
-          </div>
+      <div class="lp-split">
+        <div>
+          <p class="lp-eyebrow">The problem</p>
+          <h2 class="lp-h2">An open port <br>is a target<i>.</i></h2>
         </div>
-<pre class="lp-bibtex" id="lp-bibtex">@article{paya2024securesdp,
-  title   = {SecureSDP: a novel software-defined perimeter implementation
-             for enhanced network security and scalability},
-  author  = {Pay{\'a}, Antonio and Garc{\'i}a-D{\'i}az, Vicente and G{\'o}mez, Alberto},
-  journal = {International Journal of Information Security},
-  volume  = {23}, number = {4}, pages = {2793--2808}, year = {2024},
-  doi     = {10.1007/s10207-024-00863-7}
-}</pre>
+        <p class="lp-text">A service that answers everyone can be found, fingerprinted and attacked
+        before any credential is checked. A Software-Defined Perimeter turns that around:
+        nothing answers until the client has proven who it is.</p>
       </div>
+      <div class="lp-cols">
+        <div><h3>Scanners find it</h3><p>Any reachable port shows up in a sweep of the network.</p></div>
+        <div><h3>Banners give it away</h3><p>Versions and software leak before authentication.</p></div>
+        <div><h3>Exploits come first</h3><p>A pre-authentication bug is enough to get in.</p></div>
+      </div>
+      <div class="lp-duel">
+        <figure class="lp-card lp-card--light">
+          <div class="lp-card__head">Exposed service<span class="lp-duel__status" data-duel="open">scanning…</span></div>
+          <svg id="lp-duel-open" viewBox="0 0 300 200" role="img" aria-label="Without SDP: every probe reaches the service and gets an answer.">
+            <rect class="lp-dl-net" x="0" y="0" width="300" height="200"/>
+            <rect class="lp-dl-node" x="10" y="80" width="56" height="40" rx="8"/><text class="lp-dl-label" x="38" y="104" text-anchor="middle">scan</text>
+            <rect class="lp-dl-wall" x="160" y="20" width="10" height="160" rx="3" opacity=".35"/>
+            <text class="lp-dl-sub" x="165" y="194" text-anchor="middle">port 8080 open</text>
+            <rect class="lp-dl-node lp-dl-svc" x="232" y="76" width="58" height="48" rx="8"/><text class="lp-dl-label" x="261" y="104" text-anchor="middle">nginx</text>
+            <g class="lp-dl-probes"></g>
+          </svg>
+        </figure>
+        <figure class="lp-card lp-card--light">
+          <div class="lp-card__head">Behind the SDP gateway<span class="lp-duel__status" data-duel="sdp">scanning…</span></div>
+          <svg id="lp-duel-sdp" viewBox="0 0 300 200" role="img" aria-label="With SDP: every probe is dropped at the gateway; the service never answers.">
+            <rect class="lp-dl-net" x="0" y="0" width="300" height="200"/>
+            <rect class="lp-dl-node" x="10" y="80" width="56" height="40" rx="8"/><text class="lp-dl-label" x="38" y="104" text-anchor="middle">scan</text>
+            <rect class="lp-dl-wall is-gate" x="160" y="20" width="10" height="160" rx="3"/>
+            <text class="lp-dl-sub" x="165" y="194" text-anchor="middle">default deny</text>
+            <path class="lp-dl-x" d="M148 94 156 102M156 94 148 102" opacity="0"/>
+            <rect class="lp-dl-node lp-dl-svc" x="232" y="76" width="58" height="48" rx="8" opacity=".35"/><text class="lp-dl-label" x="261" y="104" text-anchor="middle" opacity=".35">nginx</text>
+            <g class="lp-dl-probes"></g>
+          </svg>
+        </figure>
+      </div>
+      <p class="lp-note">Illustration of the mechanism, not a measurement.</p>
+    </div>
+  </section>
 
-      <div class="lp-related">
-        <a class="lp-rel" href="https://antoniopaya22.github.io/Secure-SDP/" data-reveal>
-          <span class="lp-rel__k">Go implementation</span><strong>Secure-SDP</strong><span>Bridge-model controllers and dynamic hardening.</span>
-        </a>
-        <a class="lp-rel" href="https://antoniopaya22.github.io/iam-ids-sdp/" data-reveal>
-          <span class="lp-rel__k">IJIS 2025</span><strong>iam-ids-sdp</strong><span>Keycloak IAM and Apollon-based intrusion detection.</span>
-        </a>
-        <a class="lp-rel" href="https://github.com/Egida-Kassandra/egida" data-reveal>
-          <span class="lp-rel__k">Computers &amp; Security 2022</span><strong>Egida</strong><span>Automated security configuration deployment.</span>
-        </a>
-        <a class="lp-rel" href="{{ 'research-line/' | url }}" data-reveal>
-          <span class="lp-rel__k">Overview</span><strong>Research line</strong><span>How the publications and repositories fit together.</span>
-        </a>
+  <!-- ============================================================ HOW -->
+  <section class="lp-sec lp-dark" id="how">
+    <div class="lp-wrap">
+      <div class="lp-split">
+        <div>
+          <p class="lp-eyebrow">How it works</p>
+          <h2 class="lp-h2">Authenticate, <br>then connect<i>.</i></h2>
+        </div>
+        <p class="lp-text">The controller runs the PKI and the policy. The gateway drops everything
+        and listens for Single Packet Authorization. A valid packet opens a short-lived rule for
+        one client, one service and one address.</p>
+      </div>
+      <div class="lp-cols lp-cols--dark">
+        <div><span class="lp-num">01</span><h3>Enroll</h3><p>Every member authenticates to the controller with mutual TLS; the gateway gets its access list.</p></div>
+        <div><span class="lp-num">02</span><h3>Knock once</h3><p>The client sends a single encrypted, HMAC-authenticated SPA packet with fwknop.</p></div>
+        <div><span class="lp-num">03</span><h3>Open for one</h3><p>fwknopd adds DNAT and FORWARD rules for that client's address and removes them after 30 s.</p></div>
+      </div>
+      <div class="lp-code lp-code--wide">
+        <div class="lp-win">
+          <div class="lp-win__bar"><i></i><i></i><i></i><span>docker compose logs sdp-gateway</span></div>
+<pre class="lp-win__body lp-term" aria-label="Gateway log recorded from the lab"><span class="ln cmd"><span class="p">$</span> docker compose logs -f sdp-gateway
+</span><span class="ln">[gateway] SDP ID 1 listening for SPA on eth1 (10.231.0.20)
+</span><span class="ln">(sdp_ctrl_client.c:627) Credentials-good message received
+</span><span class="ln">Added service entry for Service ID 1
+</span><span class="ln">Added access entry for SDP ID 3
+</span><span class="ln">Starting fwknopd main event loop.
+</span><span class="ln"><span class="warn">(stanza #0) SPA Packet from IP: 10.231.0.40 received with access source match</span>
+</span><span class="ln"><span class="ok">Added FORWARD rule</span> to FWKNOP_FORWARD for 10.231.0.40 -> 10.231.1.30 port 80
+</span><span class="ln"><span class="ok">Added DNAT rule</span> to FWKNOP_PREROUTING for 10.231.0.40 -> 0.0.0.0/0 port 8080
+</span><span class="ln">Removed rule 1 from FWKNOP_FORWARD with expire time of 1794560303
+</span></pre>
+        </div>
+      </div>
+      <p class="lp-note">Recorded from the lab. <a href="{{ 'architecture/' | url }}">Full sequence diagrams →</a></p>
+    </div>
+  </section>
+
+  <!-- ========================================================== BUILD -->
+  <section class="lp-sec lp-light" id="build">
+    <div class="lp-wrap">
+      <div class="lp-split">
+        <div>
+          <p class="lp-eyebrow">Run it</p>
+          <h2 class="lp-h2">Three commands <br>to a dark service<i>.</i></h2>
+        </div>
+        <p class="lp-text">The controller creates the CA and every member's keys on first start; nothing
+        secret lives in the repository. The demo script checks the whole flow and fails loudly if
+        anything is off.</p>
+      </div>
+      <div class="lp-code">
+        <div class="lp-win">
+          <div class="lp-win__bar"><i></i><i></i><i></i><span>docker-compose.yml</span></div>
+<pre class="lp-win__body"><code><span class="k">sdp-gateway</span>:
+  build: ./gateway
+  cap_add: [NET_ADMIN, NET_RAW]   <span class="c"># iptables + SPA sniffing</span>
+  sysctls:
+    net.ipv4.ip_forward: <span class="s">"1"</span>
+  volumes:
+    - type: volume
+      source: bundles              <span class="c"># its own credentials only</span>
+      target: /bundle
+      read_only: <span class="n">true</span>
+      volume: { subpath: <span class="s">"1"</span> }
+  networks:
+    sdp-public:  { ipv4_address: <span class="s">10.231.0.20</span> }
+    sdp-private: { ipv4_address: <span class="s">10.231.1.20</span> }</code></pre>
+        </div>
+        <div class="lp-win">
+          <div class="lp-win__bar"><i></i><i></i><i></i><span>terminal</span><button type="button" data-copy="cp .env.example .env && docker compose up -d --build --wait && ./scripts/demo.sh">Copy</button></div>
+<pre class="lp-win__body lp-term" aria-label="Output of the demo script"><span class="ln cmd"><span class="p">$</span> cp .env.example .env
+</span><span class="ln cmd"><span class="p">$</span> docker compose up -d --build --wait
+</span><span class="ln cmd"><span class="p">$</span> ./scripts/demo.sh
+</span><span class="ln">[1/4] Request before SPA          <span class="ok">PASS</span> service hidden
+</span><span class="ln">[2/4] Private network             <span class="ok">PASS</span> unreachable
+</span><span class="ln">[3/4] fwknop -n service_gate      <span class="ok">PASS</span> SPA accepted
+</span><span class="ln">[4/4] Request after SPA           <span class="ok">PASS</span> HTTP 200
+</span><span class="ln">All checks passed.
+</span></pre>
+        </div>
+      </div>
+      <div class="lp-features">
+        <a href="{{ 'getting-started/' | url }}"><h3>Getting started</h3><p>Requirements, start, demo, logs and reset.</p><span>Quick start →</span></a>
+        <a href="{{ 'architecture/' | url }}"><h3>Architecture</h3><p>Networks, components, bootstrap and access sequences.</p><span>Architecture →</span></a>
+        <a href="{{ 'configuration/' | url }}"><h3>Configuration</h3><p>Environment, members, services and adding clients.</p><span>Configuration →</span></a>
+        <a href="{{ 'troubleshooting/' | url }}"><h3>Troubleshooting</h3><p>Subnets, capabilities, keys and the usual errors.</p><span>Troubleshooting →</span></a>
       </div>
     </div>
   </section>
 
-  <!-- ===================== Docs index ===================== -->
-  <section class="lp-section" id="docs" aria-labelledby="lp-docs">
+  <!-- =========================================================== EVAL -->
+  <section class="lp-sec lp-dark" id="eval">
     <div class="lp-wrap">
-      <header class="lp-head" data-reveal>
-        <p class="lp-eyebrow">Documentation</p>
-        <h2 id="lp-docs">Find what you need</h2>
-      </header>
-      <nav class="lp-docnav" aria-label="Documentation">
-        <a href="{{ 'getting-started/' | url }}" data-reveal><strong>Getting started</strong><span>Requirements, start, demo, reset.</span></a>
-        <a href="{{ 'architecture/' | url }}" data-reveal><strong>Architecture</strong><span>Components, networks and sequences.</span></a>
-        <a href="{{ 'configuration/' | url }}" data-reveal><strong>Configuration</strong><span>Environment, clients and services.</span></a>
-        <a href="{{ 'hardening/' | url }}" data-reveal><strong>Component hardening</strong><span>Egida, audit tools and results.</span></a>
-        <a href="{{ 'troubleshooting/' | url }}" data-reveal><strong>Troubleshooting</strong><span>Common errors and how to fix them.</span></a>
-        <a href="{{ 'research/' | url }}" data-reveal><strong>Paper and citation</strong><span>Abstract, BibTeX, follow-up work.</span></a>
-      </nav>
+      <div class="lp-split">
+        <div>
+          <p class="lp-eyebrow">Results</p>
+          <h2 class="lp-h2">Hardened, component <br>by component<i>.</i></h2>
+        </div>
+        <p class="lp-text">SecureSDP also hardens each SDP component with Egida, using controls that do not
+        break the services it runs. The paper audited the controller with three tools, before and
+        after applying them.</p>
+      </div>
+      <div class="lp-table">
+        <div class="lp-table__row lp-table__head"><span>Audit tool</span><span>Default</span><span>With Egida</span><span>Change</span></div>
+        <div class="lp-table__row"><b>Lynis</b><span>52.0 %</span><span>86.0 %</span><strong>+65 %</strong></div>
+        <div class="lp-table__row"><b>Chef InSpec</b><span>36.2 %</span><span>64.3 %</span><strong>+78 %</strong></div>
+        <div class="lp-table__row"><b>OpenSCAP</b><span>63.5 %</span><span>82.9 %</span><strong>+30 %</strong></div>
+      </div>
+      <div class="lp-cols lp-cols--dark">
+        <div><h3>Lynis</h3><p>Hardening index of the host; warnings and suggestions count as failures.</p></div>
+        <div><h3>Chef InSpec</h3><p>CIS Distribution Independent Linux benchmark profile.</p></div>
+        <div><h3>OpenSCAP</h3><p>CIS Level 1 Server profile for Ubuntu 20.04 LTS.</p></div>
+      </div>
+      <p class="lp-note">As reported in Payá et al., IJIS 2024, Table 2 (SDP controller). Not regenerated with this lab, whose containers are not hardened with Egida.</p>
+      <div class="lp-row"><a class="lp-btn lp-btn--line" href="{{ 'hardening/' | url }}">Component hardening →</a></div>
+    </div>
+  </section>
+
+  <!-- ============================================================ FAQ -->
+  <section class="lp-sec lp-light" id="faq">
+    <div class="lp-wrap lp-faq">
+      <h2 class="lp-h2">Questions<i>.</i></h2>
+      <div class="lp-faq__list">
+        <details open><summary>Is this ready for production?</summary>
+          <p>No. It is a research and teaching lab. The upstream SDP controller and fwknop fork are
+          no longer actively maintained; review credentials handling and firewall rules before reusing
+          any part of it.</p></details>
+        <details><summary>Why the Waverley Labs fork of fwknop?</summary>
+          <p>It adds the SDP control channel: fwknopd receives its service and access lists from the
+          controller over mutual TLS instead of a static <code>access.conf</code>, and clients rotate
+          their keys on every session.</p></details>
+        <details><summary>Can I add clients and services?</summary>
+          <p>Yes. Add rows to the seed data and a client service in Compose; the
+          <a href="{{ 'configuration/' | url }}">configuration guide</a> walks through it.</p></details>
+        <details><summary>Does the lab run Egida?</summary>
+          <p>No. Egida hardens full hosts through Ansible, which does not fit containers. To reproduce
+          the hardening results, deploy the components on virtual machines and run Egida there.</p></details>
+        <details><summary>How does this relate to Secure-SDP?</summary>
+          <p>Both accompany the same article. This lab runs the Waverley Labs SDP;
+          <a href="https://antoniopaya22.github.io/Secure-SDP/">Secure-SDP</a> is a Go implementation of
+          the Bridge model described in the paper.</p></details>
+        <details><summary>How do I cite it?</summary>
+          <p>Cite the SecureSDP article in the International Journal of Information Security 23(4),
+          2793–2808, 2024. BibTeX is on the <a href="{{ 'research/' | url }}">paper page</a>.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ CTA -->
+  <section class="lp-sec lp-cta">
+    <div class="lp-wrap">
+      <h2 class="lp-display lp-display--md">Hide your <br>services<i>.</i></h2>
+      <p class="lp-lead">Clone the lab, start it and watch a service disappear until you knock.</p>
+      <div class="lp-install">
+        <span>$</span><code>git clone https://github.com/antoniopaya22/Software-Defined-Perimeter && cd Software-Defined-Perimeter</code>
+        <button type="button" data-copy="git clone https://github.com/antoniopaya22/Software-Defined-Perimeter && cd Software-Defined-Perimeter">Copy</button>
+      </div>
+      <div class="lp-row">
+        <a class="lp-btn lp-btn--dark lp-btn--lg" href="{{ 'getting-started/' | url }}">Read the quick start</a>
+        <a class="lp-btn lp-btn--onblue lp-btn--lg" href="{{ config.repo_url }}">Star on GitHub ↗</a>
+      </div>
+      <div class="lp-watermark" aria-hidden="true">sdp lab</div>
     </div>
   </section>
 </div>
 {% endblock %}
 
-{% block content %}
-  {#- Kept for search indexing; hidden on the landing page. -#}
-  <div class="lp-search-only">{{ page.content }}</div>
+{% block footer %}
+<footer class="lp-foot">
+  <div class="lp-wrap lp-foot__grid">
+    <div>
+      <a class="lp-brand" href="{{ '.' | url }}"><img src="{{ 'assets/logo.svg' | url }}" alt="" width="22" height="22"><span>SDP Lab</span></a>
+      <p>Reproducible Software-Defined Perimeter lab with Single Packet Authorization. Companion of the SecureSDP article.</p>
+    </div>
+    <div><h4>Documentation</h4>
+      <a href="{{ 'getting-started/' | url }}">Getting started</a>
+      <a href="{{ 'architecture/' | url }}">Architecture</a>
+      <a href="{{ 'configuration/' | url }}">Configuration</a>
+      <a href="{{ 'hardening/' | url }}">Component hardening</a></div>
+    <div><h4>Research</h4>
+      <a href="https://doi.org/10.1007/s10207-024-00863-7">Paper</a>
+      <a href="{{ 'research/' | url }}">Cite</a>
+      <a href="{{ 'research-line/' | url }}">Research line</a>
+      <a href="https://antoniopaya22.github.io/Secure-SDP/">Secure-SDP</a></div>
+    <div><h4>Project</h4>
+      <a href="{{ config.repo_url }}">GitHub</a>
+      <a href="{{ config.repo_url }}/blob/main/SECURITY.md">Security</a>
+      <a href="{{ 'troubleshooting/' | url }}">Troubleshooting</a>
+      <a href="{{ config.repo_url }}/blob/main/LICENSE">Apache 2.0</a></div>
+  </div>
+  <div class="lp-wrap lp-foot__base">© 2022–2026 A. Payá, J. M. Redondo, V. García-Díaz, A. Gómez</div>
+</footer>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollTrigger.min.js"></script>
+<script src="{{ 'javascripts/home.js' | url }}"></script>
 {% endblock %}

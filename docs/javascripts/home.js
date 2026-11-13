@@ -1,51 +1,139 @@
-/* Landing page interactions (GSAP 3 + ScrollTrigger).
- * - Animated access flow with step navigation, pause and restart.
- * - Scroll reveals and growing result bars (IntersectionObserver + CSS).
- * - Copy-to-clipboard buttons.
- * Works with Material's instant navigation (document$) and respects
- * prefers-reduced-motion: everything is shown in its final state. */
+/* Landing page of the SDP research sites (GSAP 3 + ScrollTrigger).
+ * Shared by Software-Defined-Perimeter and Secure-SDP; each page enables
+ * the parts it contains. Without JavaScript all content is visible; with
+ * prefers-reduced-motion every figure shows its final state. */
 (function () {
   "use strict";
+  var root = document.getElementById("lp");
+  if (!root) return;
+  var gsap = window.gsap;
+  if (gsap && window.ScrollTrigger) gsap.registerPlugin(window.ScrollTrigger);
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var animate = !!gsap && !reduce;
 
-  var cleanups = [];
-
-  function cleanup() {
-    while (cleanups.length) {
-      try { cleanups.pop()(); } catch (e) { /* ignore */ }
-    }
+  function whenVisible(el, fn, margin) {
+    if (!("IntersectionObserver" in window)) { fn(); return; }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) { io.disconnect(); fn(); } });
+    }, { rootMargin: margin || "0px 0px -10% 0px" });
+    io.observe(el);
   }
 
-  function reducedMotion() {
-    return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  }
+  /* ---------------- navigation: solid header and section dots ---------------- */
+  (function nav() {
+    var bar = document.getElementById("lp-nav");
+    var onScroll = function () { if (bar) bar.classList.toggle("is-solid", window.scrollY > 24); };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    var dots = Array.prototype.slice.call(document.querySelectorAll(".lp-dots a"));
+    if (!dots.length || !("IntersectionObserver" in window)) return;
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        dots.forEach(function (d) { d.classList.toggle("is-on", d.getAttribute("data-dot") === e.target.id); });
+      });
+    }, { rootMargin: "-45% 0px -50% 0px" });
+    dots.forEach(function (d) {
+      var sec = document.getElementById(d.getAttribute("data-dot"));
+      if (sec) io.observe(sec);
+    });
+  })();
 
   /* ---------------- copy buttons ---------------- */
-  function initCopy(root) {
-    root.querySelectorAll("[data-copy], [data-copy-target]").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        var text = btn.getAttribute("data-copy");
-        if (!text) {
-          var target = document.getElementById(btn.getAttribute("data-copy-target"));
-          text = target ? target.textContent : "";
-        }
-        var done = function () {
-          var label = btn.textContent;
-          btn.classList.add("is-copied");
-          btn.textContent = "Copied";
-          setTimeout(function () { btn.classList.remove("is-copied"); btn.textContent = label; }, 1600);
-        };
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(text.trim()).then(done, function () {});
-        }
+  root.querySelectorAll("[data-copy], [data-copy-target]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var text = btn.getAttribute("data-copy");
+      if (!text) {
+        var t = document.getElementById(btn.getAttribute("data-copy-target"));
+        text = t ? t.textContent : "";
+      }
+      if (!navigator.clipboard) return;
+      navigator.clipboard.writeText(text.trim()).then(function () {
+        var label = btn.textContent;
+        btn.textContent = "Copied";
+        setTimeout(function () { btn.textContent = label; }, 1500);
       });
     });
-  }
+  });
 
-  /* ---------------- access flow ----------------
-   * Generic driver: step buttons ([data-step], with data-status text),
-   * pause/restart controls and visibility handling. The animation itself
-   * is selected by <svg class="lp-diagram" data-flow="...">. */
+  /* ---------------- terminal replay ----------------
+   * <pre class="lp-term"> holds one <span class="ln"> per line (visible
+   * without JS). When it scrolls into view the lines are replayed. */
+  root.querySelectorAll("pre.lp-term").forEach(function (term) {
+    if (reduce) return;
+    var lines = Array.prototype.slice.call(term.querySelectorAll(".ln"));
+    if (!lines.length) return;
+    lines.forEach(function (l) { l.style.display = "none"; });
+    var cur = document.createElement("span");
+    cur.className = "cur";
+    cur.textContent = "▋";
+    term.appendChild(cur);
+    whenVisible(term, function () {
+      var i = 0;
+      (function next() {
+        if (i >= lines.length) { cur.remove(); return; }
+        var l = lines[i++];
+        l.style.display = "";
+        term.insertBefore(cur, l.nextSibling);
+        setTimeout(next, l.classList.contains("cmd") ? 650 : 170);
+      })();
+    });
+  });
 
+  /* ---------------- duel: exposed port vs SDP gateway ---------------- */
+  (function duel() {
+    var open = document.getElementById("lp-duel-open");
+    var sdp = document.getElementById("lp-duel-sdp");
+    if (!open || !sdp) return;
+    var sOpen = document.querySelector('[data-duel="open"]');
+    var sSdp = document.querySelector('[data-duel="sdp"]');
+    function finalState() {
+      open.querySelector(".lp-dl-svc").classList.add("is-exposed");
+      if (sOpen) { sOpen.textContent = "8 of 8 probes answered"; sOpen.className = "lp-duel__status is-bad"; }
+      if (sSdp) { sSdp.textContent = "0 of 8 probes answered"; sSdp.className = "lp-duel__status is-good"; }
+    }
+    if (!animate) { finalState(); return; }
+    var NS = "http://www.w3.org/2000/svg";
+    function run(svg, blocked, status, label) {
+      var g = svg.querySelector(".lp-dl-probes");
+      var svc = svg.querySelector(".lp-dl-svc");
+      var x = svg.querySelector(".lp-dl-x");
+      var answered = 0, sent = 0;
+      var tl = gsap.timeline({ repeat: -1, repeatDelay: 1.2, onRepeat: function () { answered = 0; sent = 0; svc.classList.remove("is-exposed"); } });
+      tl.call(function () { while (g.firstChild) g.removeChild(g.firstChild); status.textContent = "scanning…"; status.className = "lp-duel__status"; });
+      for (var i = 0; i < 8; i++) {
+        (function (k) {
+          var y = 40 + k * 17;
+          tl.call(function () {
+            var c = document.createElementNS(NS, "circle");
+            c.setAttribute("class", "lp-dl-probe"); c.setAttribute("r", "4"); c.setAttribute("cx", "40"); c.setAttribute("cy", String(y));
+            g.appendChild(c);
+            gsap.to(c, { attr: { cx: blocked ? 158 : 240, cy: blocked ? y : 100 }, duration: 0.55, ease: "power1.in", onComplete: function () {
+              sent++;
+              if (blocked) {
+                gsap.to(c, { opacity: 0, duration: 0.25 });
+                gsap.fromTo(x, { opacity: 1 }, { opacity: 0, duration: 0.5 });
+              } else {
+                answered++;
+                svc.classList.add("is-exposed");
+                gsap.to(c, { attr: { cx: 40, cy: y }, opacity: 0.25, duration: 0.6, ease: "power1.out" });
+              }
+              status.textContent = answered + " of " + sent + " probes answered";
+              status.className = "lp-duel__status " + (blocked ? "is-good" : "is-bad");
+            } });
+          }, null, k * 0.22);
+        })(i);
+      }
+      tl.to({}, { duration: 1.8 });
+      return tl;
+    }
+    whenVisible(open, function () {
+      run(open, false, sOpen);
+      run(sdp, true, sSdp);
+    });
+  })();
+
+  /* ---------------- access flow ---------------- */
   var FLOWS = {};
 
   // Software-Defined Perimeter lab: controller, client, gateway, service.
@@ -158,135 +246,82 @@
     tl.call(function () { focus(gwId, false); });
   }
 
-  function initFlow(root) {
+
+  (function flow() {
     var svg = root.querySelector(".lp-diagram");
     if (!svg) return;
-    var flow = FLOWS[svg.getAttribute("data-flow") || "sdp"];
-    if (!flow) return;
+    var def = FLOWS[svg.getAttribute("data-flow") || "sdp"];
+    if (!def) return;
     var q = function (id) { return svg.querySelector("#" + id); };
-    var stepButtons = Array.prototype.slice.call(root.querySelectorAll("[data-step]"));
+    var buttons = Array.prototype.slice.call(root.querySelectorAll("[data-step]"));
+    var caption = document.getElementById("lp-flow-caption");
     var toggle = root.querySelector('[data-flow="toggle"]');
     var restart = root.querySelector('[data-flow="restart"]');
     var status = q("lp-status");
-    var labels = stepButtons.map(function (_, i) { return "s" + i; });
+    var labels = buttons.map(function (_, i) { return "s" + i; });
 
     function setStep(i) {
-      stepButtons.forEach(function (b, j) {
-        if (j === i) b.setAttribute("aria-current", "step");
-        else b.removeAttribute("aria-current");
+      buttons.forEach(function (b, j) {
+        if (j === i) b.setAttribute("aria-current", "step"); else b.removeAttribute("aria-current");
       });
-      if (status && stepButtons[i]) status.textContent = stepButtons[i].getAttribute("data-status") || "";
+      var b = buttons[i];
+      if (!b) return;
+      if (status) status.textContent = b.getAttribute("data-status") || "";
+      if (caption) caption.textContent = b.getAttribute("data-caption") || "";
     }
-
     function focus(id, on) { var n = q(id); if (n) n.classList.toggle("is-focus", on); }
-
     function finalState() {
-      flow.final(q);
+      def.final(q);
       var svc = q("lp-n-svc"); if (svc) svc.classList.add("is-on");
       q("lp-badge").classList.add("is-open");
       q("lp-badge-closed").setAttribute("opacity", "0");
       q("lp-badge-open").setAttribute("opacity", "1");
-      setStep(stepButtons.length - 1);
+      setStep(buttons.length - 1);
     }
 
-    if (!window.gsap || reducedMotion()) {
+    if (!animate) {
       finalState();
-      stepButtons.forEach(function (b, i) { b.addEventListener("click", function () { setStep(i); }); });
+      buttons.forEach(function (b, i) { b.addEventListener("click", function () { setStep(i); }); });
       if (toggle) toggle.hidden = true;
       if (restart) restart.hidden = true;
       return;
     }
 
-    var gsap = window.gsap;
-    if (window.ScrollTrigger) gsap.registerPlugin(window.ScrollTrigger);
     var tl = gsap.timeline({ repeat: -1, repeatDelay: 1.2, paused: true });
-
-    // reset at the start of every loop
     tl.call(function () {
-      flow.reset(q);
+      def.reset(q);
       svg.querySelectorAll(".lp-d-node").forEach(function (n) { n.classList.remove("is-focus", "is-on"); });
       q("lp-badge").classList.remove("is-open");
     });
     tl.set(svg.querySelectorAll(".lp-d-pkt, #lp-p-drop"), { opacity: 0 });
     tl.set("#lp-badge-closed", { opacity: 1 });
     tl.set("#lp-badge-open", { opacity: 0 });
-
     function step(i) { tl.addLabel(labels[i]); tl.call(setStep, [i]); }
-    flow.build(tl, q, step, focus);
+    def.build(tl, q, step, focus);
 
-    function setPlaying(playing) {
+    function setPlaying(p) {
       if (!toggle) return;
-      toggle.setAttribute("aria-label", playing ? "Pause animation" : "Play animation");
-      toggle.classList.toggle("is-paused", !playing);
+      toggle.setAttribute("aria-label", p ? "Pause animation" : "Play animation");
+      toggle.textContent = p ? "❚❚" : "▶";
+      toggle.dataset.paused = p ? "" : "1";
     }
-
-    stepButtons.forEach(function (b, i) {
-      b.addEventListener("click", function () { tl.play(labels[i]); setPlaying(true); });
-    });
+    buttons.forEach(function (b, i) { b.addEventListener("click", function () { tl.play(labels[i]); setPlaying(true); }); });
     if (toggle) toggle.addEventListener("click", function () {
       if (tl.paused()) { tl.play(); setPlaying(true); } else { tl.pause(); setPlaying(false); }
     });
     if (restart) restart.addEventListener("click", function () { tl.restart(); setPlaying(true); });
 
-    // play only while visible
+    var allowed = function () { return !toggle || !toggle.dataset.paused; };
     if (window.ScrollTrigger) {
-      var playIfAllowed = function () { if (!toggle || !toggle.classList.contains("is-paused")) tl.play(); };
-      var st = window.ScrollTrigger.create({
-        trigger: svg,
-        start: "top 85%",
-        end: "bottom 10%",
-        onEnter: playIfAllowed,
-        onEnterBack: playIfAllowed,
+      window.ScrollTrigger.create({
+        trigger: svg, start: "top 90%", end: "bottom 10%",
+        onEnter: function () { if (allowed()) tl.play(); },
+        onEnterBack: function () { if (allowed()) tl.play(); },
         onLeave: function () { tl.pause(); },
         onLeaveBack: function () { tl.pause(); }
       });
-      cleanups.push(function () { st.kill(); });
     } else {
       tl.play();
     }
-    cleanups.push(function () { tl.kill(); });
-  }
-
-  /* ---------------- reveals and bars ----------------
-   * Content is always visible (no fade-ins that leave gaps while scrolling).
-   * Only the result bars grow when they enter the viewport. */
-  function initReveals(root) {
-    var items = Array.prototype.slice.call(root.querySelectorAll(".lp-bars[data-reveal]"));
-    if (reducedMotion() || !("IntersectionObserver" in window)) return;
-
-    root.classList.add("lp-js");
-    items.forEach(function (el) { el.classList.add("is-pending"); });
-
-    var io = new IntersectionObserver(function (entries) {
-      var visible = entries.filter(function (e) { return e.isIntersecting; });
-      visible.forEach(function (entry, i) {
-        entry.target.style.transitionDelay = Math.min(i, 5) * 70 + "ms";
-        entry.target.classList.remove("is-pending");
-        io.unobserve(entry.target);
-      });
-    }, { rootMargin: "0px 0px -8% 0px", threshold: 0.05 });
-
-    items.forEach(function (el) { io.observe(el); });
-    cleanups.push(function () {
-      io.disconnect();
-      items.forEach(function (el) { el.classList.remove("is-pending"); el.style.transitionDelay = ""; });
-    });
-  }
-
-  function init() {
-    cleanup();
-    var root = document.querySelector("[data-landing]");
-    if (!root) return;
-    initCopy(root);
-    initFlow(root);
-    initReveals(root);
-  }
-
-  if (window.document$ && typeof window.document$.subscribe === "function") {
-    window.document$.subscribe(init);
-  } else if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
-  } else {
-    init();
-  }
+  })();
 })();
