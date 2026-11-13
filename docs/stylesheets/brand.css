@@ -1,7 +1,7 @@
 /* SDP Lab brand: "dark until the knock".
    Graphite with a green cast, signal lime for authorized traffic, red for
    dropped packets and amber reserved for the SPA packet itself. The hero
-   background is a matrix of closed ports. Used by the landing page
+   background is a set of concentric perimeter rings. Used by the landing page
    (landing.css) and by the documentation pages (extra.css). */
 
 .lp, .lp-nav, .lp-foot {
@@ -36,11 +36,11 @@
   --lp-code-fg: #dfe4dc;
   --lp-nav-bg: rgba(11, 13, 12, .86);
 
-  /* hero: a field of closed ports with a faint lime signal */
+  /* hero: concentric perimeter rings around the access-flow figure */
   --lp-glow-1: rgba(197, 241, 53, .10);
   --lp-glow-2: rgba(197, 241, 53, .04);
-  --lp-hero-pattern: radial-gradient(circle, rgba(255, 255, 255, .16) 1.1px, transparent 1.6px);
-  --lp-hero-pattern-size: 22px 22px;
+  --lp-hero-pattern: repeating-radial-gradient(circle at 74% 46%, rgba(255, 255, 255, .075) 0 1px, transparent 1px 72px);
+  --lp-hero-pattern-size: auto;
 
   /* eyebrows look like packet header fields */
   --lp-eyebrow-font: var(--md-code-font-family, "JetBrains Mono", monospace);
