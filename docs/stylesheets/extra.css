@@ -751,3 +751,13 @@
 @media (prefers-reduced-motion: reduce) {
   .lp * { transition: none !important; }
 }
+
+/* provenance note under the hero facts */
+.lp-provenance {
+  margin: 1.2rem 0 0 !important;
+  padding: 0.6rem 0.8rem;
+  border-left: 3px solid var(--lp-line-strong);
+  font-size: 0.68rem;
+  line-height: 1.5;
+  color: var(--lp-muted);
+}
