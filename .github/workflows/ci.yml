@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: ShellCheck
+        run: |
+          shellcheck -s sh controller/entrypoint.sh gateway/entrypoint.sh client/entrypoint.sh
+          shellcheck scripts/demo.sh database/02-seed.sh
+
+      - name: Compose file is valid
+        run: |
+          cp .env.example .env
+          docker compose config --quiet
+
+  e2e:
+    name: End-to-end SPA demo
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Create .env with random secrets
+        run: |
+          {
+            echo "DB_ROOT_PASSWORD=$(openssl rand -hex 24)"
+            echo "DB_USER=sdp"
+            echo "DB_PASSWORD=$(openssl rand -hex 24)"
+            echo "CA_KEY_PASSWORD=$(openssl rand -hex 24)"
+          } > .env
+
+      - name: Build and start the lab
+        run: docker compose up -d --build --wait
+
+      - name: Run demo (hidden before SPA, reachable after)
+        run: ./scripts/demo.sh
+
+      - name: Second SPA after credential rotation
+        run: |
+          sleep 35   # let the first access window expire
+          ./scripts/demo.sh
+
+      - name: Logs
+        if: failure()
+        run: docker compose logs --no-color
+
+      - name: Tear down
+        if: always()
+        run: docker compose down -v
