@@ -1,4 +1,4 @@
-site_name: Software-Defined Perimeter Lab
+site_name: SDP Lab
 site_description: Reproducible Software-Defined Perimeter (SDP) lab with fwknop Single Packet Authorization, companion to the SecureSDP paper.
 site_url: https://antoniopaya22.github.io/Software-Defined-Perimeter/
 repo_url: https://github.com/antoniopaya22/Software-Defined-Perimeter
@@ -27,7 +27,6 @@ theme:
       accent: custom
       toggle: { icon: material/weather-sunny, name: Switch to light mode }
   features:
-    - navigation.tabs
     - navigation.sections
     - navigation.indexes
     - navigation.top
@@ -72,6 +71,18 @@ markdown_extensions:
   - pymdownx.tabbed: { alternate_style: true }
 
 extra:
+  header_nav:
+    - title: Docs
+      url: getting-started/
+    - title: Architecture
+      url: architecture/
+    - title: Hardening
+      url: hardening/
+    - title: Research
+      url: research/
+  header_cta:
+    title: Get started
+    url: getting-started/
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/antoniopaya22
