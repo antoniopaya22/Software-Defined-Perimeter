@@ -248,11 +248,10 @@
   }
 
   /* ---------------- reveals and bars ----------------
-   * Progressive enhancement: without JavaScript everything is visible.
-   * With it, sections fade in as they enter the viewport (IntersectionObserver
-   * + CSS transitions), and the result bars grow when they become visible. */
+   * Content is always visible (no fade-ins that leave gaps while scrolling).
+   * Only the result bars grow when they enter the viewport. */
   function initReveals(root) {
-    var items = Array.prototype.slice.call(root.querySelectorAll("[data-reveal]"));
+    var items = Array.prototype.slice.call(root.querySelectorAll(".lp-bars[data-reveal]"));
     if (reducedMotion() || !("IntersectionObserver" in window)) return;
 
     root.classList.add("lp-js");
