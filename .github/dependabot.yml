@@ -11,12 +11,20 @@ updates:
     groups:
       base-images:
         patterns: ["*"]
+    ignore:
+      # Stay on Node.js LTS lines; move to the next LTS major deliberately.
+      - dependency-name: node
+        update-types: ["version-update:semver-major"]
 
   # mariadb, nginx and phpmyadmin images in docker-compose.yml
   - package-ecosystem: docker-compose
     directory: /
     schedule:
       interval: weekly
+    ignore:
+      # Stay on the MariaDB LTS series; move to the next LTS deliberately.
+      - dependency-name: mariadb
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: /
