@@ -23,6 +23,8 @@ hero:
     - Single Packet Authorization (fwknop)
     - Mutual TLS controller
     - Docker Compose · CI-tested
+  denied: "DROP  10.231.0.40 → :8080  no rule"
+  granted: "ACCEPT  10.231.0.40 → :8080  30 s"
 ---
 
 # Software-Defined Perimeter Lab
