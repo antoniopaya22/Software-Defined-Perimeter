@@ -1,4 +1,4 @@
-FROM node:22-bookworm-slim
+FROM node:25-bookworm-slim
 
 # openssl: used by the `pem` npm package to issue certificates
 # mariadb-client: lets the entrypoint check which SDP IDs already have keys
