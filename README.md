@@ -1,50 +1,27 @@
-# Software-Defined Perimeter
+# Software-Defined Perimeter Lab
 
-[![Preprint](https://img.shields.io/badge/DOI-10.2139%2Fssrn.4326496-0E7490)](https://doi.org/10.2139/ssrn.4326496)
-![GitHub LICENSE](https://img.shields.io/github/license/antoniopaya22/Software-Defined-Perimeter?color=green&label=license&logoColor=green)
-![Environment](https://img.shields.io/badge/environment-docker-blue)
+[![Paper](https://img.shields.io/badge/IJIS_2024-10.1007%2Fs10207--024--00863--7-0E7490)](https://doi.org/10.1007/s10207-024-00863-7)
+[![CI](https://github.com/antoniopaya22/Software-Defined-Perimeter/actions/workflows/ci.yml/badge.svg)](https://github.com/antoniopaya22/Software-Defined-Perimeter/actions/workflows/ci.yml)
+[![Docs](https://github.com/antoniopaya22/Software-Defined-Perimeter/actions/workflows/docs.yml/badge.svg)](https://antoniopaya22.github.io/Software-Defined-Perimeter/)
+[![License](https://img.shields.io/github/license/antoniopaya22/Software-Defined-Perimeter?color=green)](LICENSE)
 
-## Description
+A reproducible **Software-Defined Perimeter (SDP)** lab built with Docker Compose. A protected service stays invisible behind a default-drop gateway until a client authenticates with **Single Packet Authorization (SPA)**; then the gateway opens a short-lived path for that client alone.
 
-Code for the preprint **[Securing the Software-Defined Perimeter Framework with Automated Security Configuration Deployment Systems](https://doi.org/10.2139/ssrn.4326496)** (SSRN, 2023).
+It is the companion lab of the article **[SecureSDP: a novel software-defined perimeter implementation for enhanced network security and scalability](https://doi.org/10.1007/s10207-024-00863-7)** (*International Journal of Information Security*, 2024). An earlier version of that work was released as an [SSRN preprint](https://doi.org/10.2139/ssrn.4326496) in 2023. The lab deploys the open-source SDP Controller and the SDP-enabled fork of fwknop from [Waverley Labs](https://github.com/waverleylabs).
 
-This repository deploys a Software-Defined Perimeter (SDP) lab with Docker Compose, based on the open-source implementation by [Waverley Labs](https://www.waverleylabs.com/services/software-defined-perimeter-panther-sdp-implementation/): an SDP Controller, an SDP Gateway that hides a protected service behind a default-drop firewall, and an SDP Client that gains access with Single Packet Authorization (SPA).
+📖 **Documentation: <https://antoniopaya22.github.io/Software-Defined-Perimeter/>**
 
-The automated security configuration deployment system used in the paper to harden the SDP hosts is **Egida**, maintained in its own repository: [Egida-Kassandra/egida](https://github.com/Egida-Kassandra/egida).
-
-> **Lab use only.** This setup is meant for research and testing. Review the configuration, credentials handling and firewall rules before using any part of it in production.
-
-## Architecture & Components
-
-![SDP Architecture](docs/BasicSDP.svg)
-
-| Container | Role | Networks |
-|---|---|---|
-| `sdp-controller` | [Waverley Labs SDP Controller](https://github.com/waverleylabs/SDPController). Runs the PKI: issues certificates and SPA keys for every member, and tells gateways which clients may reach which services. | public, mgmt |
-| `sdp-db` | MariaDB with the controller's members, services and permissions. | mgmt (internal) |
-| `sdp-gateway` | [fwknop](https://github.com/waverleylabs/fwknop) daemon (SDP fork). Drops all traffic by default; when a valid SPA packet arrives it opens a time-limited DNAT/FORWARD rule for that client only. | public, private |
-| `protected-service` | Accepting Host (an nginx web server). Only reachable through the gateway. | private (internal) |
-| `sdp-client` | Initiating Host. Sends SPA packets with `fwknop` and refreshes its credentials with the controller. | public |
-
-- **SDP Controller**: authenticates members with mutual TLS (each certificate's CN is the member's SDP ID), rotates their credentials, and pushes service and access lists to the gateways.
-- **SDP Gateway**: uses Single Packet Authorization (SPA) for strong service concealment. SPA needs a single packet, encrypted, non-replayable and authenticated with an HMAC, to request access to a service hidden behind a firewall in a default-drop stance.
-- **SDP Client (IH)**: requests access to the services the controller allows it to use, without any port being visible beforehand.
-
-![SPA](docs/rsz_spa.png)
+![SDP architecture](docs/assets/sdp-architecture.svg)
 
 ## Quick start
 
-Requirements: Docker Engine 26 or newer, with the Compose plugin (`docker compose`).
+Requirements: Docker Engine 26+ with the Compose plugin, on Linux.
 
 ```bash
-cp .env.example .env
-# edit .env and replace every "change-me" (e.g. with: openssl rand -base64 24)
-
+cp .env.example .env        # then replace every "change-me"
 docker compose up -d --build --wait
 ./scripts/demo.sh
 ```
-
-`scripts/demo.sh` checks the whole flow:
 
 ```text
 [1/4] Request to http://10.231.0.20:8080/ before SPA (expect: blocked)
@@ -57,58 +34,51 @@ docker compose up -d --build --wait
   PASS protected service reachable through the gateway
 ```
 
-The same steps by hand:
+Reset everything (database, CA, keys) with `docker compose down -v`.
 
-```bash
-docker compose exec sdp-client curl -m 4 http://10.231.0.20:8080/   # times out
-docker compose exec sdp-client fwknop -n service_gate                # send SPA
-docker compose exec sdp-client curl http://10.231.0.20:8080/         # nginx page
-```
-
-Access stays open for the time set by the gateway (30 s by default), and only for the client's IP address.
-
-To start from scratch (new CA, keys and database): `docker compose down -v`.
-
-## How it works
-
-1. **Database.** On first start, MariaDB loads the schema (`database/01-schema.sql`) and the example data (`database/02-seed.sh`): gateway (SDP ID 1), controller (SDP ID 2), client (SDP ID 3), and service 1, which maps gateway port `8080/tcp` to `protected-service:80`. The client is allowed to use service 1.
-2. **Controller bootstrap** (`controller/entrypoint.sh`). Creates the CA if missing, then runs `genCredentials.js` for each SDP ID that has no keys yet: a TLS certificate and key, plus SPA encryption and HMAC keys stored in the database. It exports one bundle per member into the `bundles` volume. Each container mounts only its own bundle, and the CA private key never leaves the controller.
-3. **Gateway** (`gateway/entrypoint.sh`). Sets `INPUT`/`FORWARD` to `DROP`, renders its configuration from the bundle, and starts `fwknopd`. fwknopd connects to the controller, receives the service list and the clients' SPA keys, and sniffs SPA packets on the public interface.
-4. **Client** (`client/entrypoint.sh`). Renders `~/.fwknoprc` and `~/sdp_ctrl_client.conf` from its bundle. `fwknop -n service_gate` sends the SPA packet to the gateway, then contacts the controller, which rotates the client's keys and notifies the gateway.
-
-Credentials rotated by the controller are kept in the `gateway-state` and `client-home` volumes, so they survive container restarts and re-creation.
-
-## Configuration
-
-| What | Where |
+| Container | Role |
 |---|---|
-| Passwords, subnets, IP addresses, protected port | `.env` (see `.env.example`) |
-| Members, services and permissions | `database/02-seed.sh` (applied only when the database volume is empty) |
-| Controller settings | `controller/config.js` (reads environment variables) |
-| Gateway daemon | `gateway/config/fwknopd.conf.tmpl` |
-| Gateway / client control-channel settings | `gateway/config/sdp_ctrl_client.conf.tmpl`, `client/config/*.tmpl` |
-| Upstream versions | `SDPCONTROLLER_COMMIT` and `FWKNOP_COMMIT` build args in the Dockerfiles |
+| `sdp-controller` | Waverley Labs SDP Controller: PKI, mutual TLS, service and access lists. |
+| `sdp-db` | MariaDB with members, services and permissions (internal network only). |
+| `sdp-gateway` | fwknop in a default-drop firewall; opens per-client DNAT/FORWARD rules after a valid SPA packet. |
+| `protected-service` | Accepting Host (nginx), reachable only through the gateway. |
+| `sdp-client` | Initiating Host: sends SPA packets and refreshes its credentials. |
 
-To inspect the database, start phpMyAdmin (bound to localhost only): `docker compose --profile debug up -d phpmyadmin`, then open <http://127.0.0.1:8081>.
+The documentation covers the [architecture](https://antoniopaya22.github.io/Software-Defined-Perimeter/architecture/), [configuration](https://antoniopaya22.github.io/Software-Defined-Perimeter/configuration/) (adding clients and services), [component hardening with Egida](https://antoniopaya22.github.io/Software-Defined-Perimeter/hardening/) and [troubleshooting](https://antoniopaya22.github.io/Software-Defined-Perimeter/troubleshooting/).
 
-## Troubleshooting
+> **Lab use only.** This setup is for research, teaching and testing. Review it carefully before reusing any part in production.
 
-- **`docker compose` asks for variables:** create `.env` from `.env.example`.
-- **Subnet overlaps with an existing network:** set `PUBLIC_SUBNET`, `PRIVATE_SUBNET` and the IP variables in `.env`.
-- **Gateway logs show iptables permission errors:** the container needs the `NET_ADMIN` and `NET_RAW` capabilities, which `docker-compose.yml` grants. Rootless Docker or restricted hosts may not allow them.
-- **Logs:** `docker compose logs -f sdp-gateway sdp-controller`.
+## Research line
+
+| Year | Work | Code |
+|---|---|---|
+| 2022 | Egida: automated security configuration deployment ([C&S](https://doi.org/10.1016/j.cose.2022.102638)) | [Egida-Kassandra/egida](https://github.com/Egida-Kassandra/egida) |
+| 2024 | **SecureSDP**: Bridge-model SDP with per-component hardening ([IJIS](https://doi.org/10.1007/s10207-024-00863-7)) | **this lab** · [Secure-SDP](https://github.com/antoniopaya22/Secure-SDP) |
+| 2024 | Apollon: IDS robust to adversarial machine learning ([C&S](https://doi.org/10.1016/j.cose.2023.103546)) | [apollon](https://github.com/antoniopaya22/apollon) |
+| 2025 | SDP with Keycloak IAM and IDS ([IJIS](https://doi.org/10.1007/s10207-025-01099-9)) | [iam-ids-sdp](https://github.com/antoniopaya22/iam-ids-sdp) |
+
+More in the [research line](https://antoniopaya22.github.io/Software-Defined-Perimeter/research-line/) page.
 
 ## Citation
 
+If you use this lab, please cite:
+
 ```bibtex
-@misc{paya2023securing,
-  title  = {Securing the Software-Defined Perimeter Framework with Automated Security Configuration Deployment Systems},
-  author = {Pay{\'a} Gonz{\'a}lez, Antonio and Redondo L{\'o}pez, Jos{\'e} Manuel and Garc{\'i}a D{\'i}az, Vicente and G{\'o}mez G{\'o}mez, Alberto},
-  year   = {2023},
-  note   = {SSRN preprint},
-  doi    = {10.2139/ssrn.4326496}
+@article{paya2024securesdp,
+  title   = {SecureSDP: a novel software-defined perimeter implementation for enhanced network security and scalability},
+  author  = {Pay{\'a}, Antonio and Garc{\'i}a-D{\'i}az, Vicente and G{\'o}mez, Alberto},
+  journal = {International Journal of Information Security},
+  volume  = {23},
+  number  = {4},
+  pages   = {2793--2808},
+  year    = {2024},
+  doi     = {10.1007/s10207-024-00863-7}
 }
 ```
+
+## Contributing and security
+
+Issues and pull requests are welcome. CI builds the whole lab and runs `scripts/demo.sh` on every pull request. To report a vulnerability, see [SECURITY.md](SECURITY.md).
 
 ## License
 

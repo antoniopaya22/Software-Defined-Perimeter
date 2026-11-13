@@ -1,44 +1,101 @@
 cff-version: 1.2.0
-message: "If you use this software, please cite the preprint below."
-title: "Securing the Software-Defined Perimeter Framework with Automated Security Configuration Deployment Systems"
+message: "If you use this software, please cite the article below."
+title: "Software-Defined Perimeter Lab"
+abstract: "Reproducible Software-Defined Perimeter (SDP) lab with fwknop Single Packet Authorization, companion to the SecureSDP article."
 type: software
 license: Apache-2.0
 repository-code: "https://github.com/antoniopaya22/Software-Defined-Perimeter"
+url: "https://antoniopaya22.github.io/Software-Defined-Perimeter/"
 authors:
   - family-names: "Payá González"
     given-names: "Antonio"
     orcid: "https://orcid.org/0000-0003-3733-3805"
+    affiliation: "University of Oviedo"
   - family-names: "Redondo López"
     given-names: "José Manuel"
     orcid: "https://orcid.org/0000-0002-0939-0186"
-  - family-names: "García Díaz"
+    affiliation: "University of Oviedo"
+  - family-names: "García-Díaz"
     given-names: "Vicente"
     orcid: "https://orcid.org/0000-0003-2037-8548"
+    affiliation: "University of Oviedo"
   - family-names: "Gómez Gómez"
     given-names: "Alberto"
     orcid: "https://orcid.org/0000-0003-3570-4043"
+    affiliation: "University of Oviedo"
 keywords:
   - software-defined perimeter
   - zero trust
   - single packet authorization
+  - fwknop
+  - defense in depth
 preferred-citation:
   type: article
-  status: preprint
-  title: "Securing the Software-Defined Perimeter Framework with Automated Security Configuration Deployment Systems"
+  title: "SecureSDP: a novel software-defined perimeter implementation for enhanced network security and scalability"
   authors:
     - family-names: "Payá González"
       given-names: "Antonio"
       orcid: "https://orcid.org/0000-0003-3733-3805"
-    - family-names: "Redondo López"
-      given-names: "José Manuel"
-      orcid: "https://orcid.org/0000-0002-0939-0186"
-    - family-names: "García Díaz"
+      affiliation: "University of Oviedo"
+    - family-names: "García-Díaz"
       given-names: "Vicente"
       orcid: "https://orcid.org/0000-0003-2037-8548"
+      affiliation: "University of Oviedo"
     - family-names: "Gómez Gómez"
       given-names: "Alberto"
       orcid: "https://orcid.org/0000-0003-3570-4043"
-  journal: "SSRN Electronic Journal"
-  year: 2023
-  doi: "10.2139/ssrn.4326496"
-  url: "https://doi.org/10.2139/ssrn.4326496"
+      affiliation: "University of Oviedo"
+  journal: "International Journal of Information Security"
+  volume: 23
+  issue: 4
+  start: 2793
+  end: 2808
+  year: 2024
+  doi: "10.1007/s10207-024-00863-7"
+  url: "https://doi.org/10.1007/s10207-024-00863-7"
+references:
+  - type: article
+    status: preprint
+    title: "Securing the Software-Defined Perimeter Framework with Automated Security Configuration Deployment Systems"
+    authors:
+      - family-names: "Payá González"
+        given-names: "Antonio"
+      - family-names: "Redondo López"
+        given-names: "José Manuel"
+        orcid: "https://orcid.org/0000-0002-0939-0186"
+      - family-names: "García Díaz"
+        given-names: "Vicente"
+      - family-names: "Gómez Gómez"
+        given-names: "Alberto"
+    journal: "SSRN Electronic Journal"
+    year: 2023
+    doi: "10.2139/ssrn.4326496"
+  - type: article
+    title: "Enhancing software-defined perimeters with integrated identity solutions and threat detection for robust zero trust security"
+    authors:
+      - family-names: "Payá González"
+        given-names: "Antonio"
+      - family-names: "García-Díaz"
+        given-names: "Vicente"
+      - family-names: "Gómez Gómez"
+        given-names: "Alberto"
+    journal: "International Journal of Information Security"
+    volume: 24
+    issue: 4
+    start: 178
+    year: 2025
+    doi: "10.1007/s10207-025-01099-9"
+  - type: article
+    title: "Automated security configuration deployment systems with early error detection"
+    authors:
+      - family-names: "Payá González"
+        given-names: "Antonio"
+      - family-names: "Cotarelo"
+        given-names: "Alberto"
+      - family-names: "Redondo López"
+        given-names: "José Manuel"
+    journal: "Computers & Security"
+    volume: 116
+    start: 102638
+    year: 2022
+    doi: "10.1016/j.cose.2022.102638"

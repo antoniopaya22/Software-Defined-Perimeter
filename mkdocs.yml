@@ -1,0 +1,69 @@
+site_name: Software-Defined Perimeter Lab
+site_description: Reproducible Software-Defined Perimeter (SDP) lab with fwknop Single Packet Authorization, companion to the SecureSDP paper.
+site_url: https://antoniopaya22.github.io/Software-Defined-Perimeter/
+repo_url: https://github.com/antoniopaya22/Software-Defined-Perimeter
+repo_name: antoniopaya22/Software-Defined-Perimeter
+edit_uri: edit/main/docs/
+copyright: Copyright &copy; Antonio Payá González and contributors
+
+theme:
+  name: material
+  language: en
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: teal
+      toggle: { icon: material/weather-night, name: Switch to dark mode }
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: teal
+      toggle: { icon: material/weather-sunny, name: Switch to light mode }
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - content.code.copy
+    - search.suggest
+    - search.highlight
+  icon:
+    repo: fontawesome/brands/github
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc: { permalink: true }
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight: { anchor_linenums: true }
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed: { alternate_style: true }
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/antoniopaya22
+
+nav:
+  - Home: index.md
+  - Guide:
+      - Getting started: getting-started.md
+      - Architecture: architecture.md
+      - Configuration: configuration.md
+      - Component hardening: hardening.md
+      - Troubleshooting: troubleshooting.md
+  - Research:
+      - Paper: research.md
+      - Research line: research-line.md
