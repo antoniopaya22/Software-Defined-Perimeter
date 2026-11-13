@@ -31,7 +31,6 @@ theme:
     - navigation.indexes
     - navigation.top
     - navigation.footer
-    - navigation.instant
     - navigation.tracking
     - toc.follow
     - content.code.copy
@@ -45,10 +44,6 @@ theme:
 extra_css:
   - stylesheets/extra.css
 
-extra_javascript:
-  - https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js
-  - https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollTrigger.min.js
-  - javascripts/landing.js
 
 markdown_extensions:
   - admonition
