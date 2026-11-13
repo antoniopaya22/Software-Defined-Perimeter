@@ -1,89 +1,168 @@
-version: '3.6'
+# Software-Defined Perimeter lab
+#
+#   sdp-public  : client, gateway, controller (untrusted side)
+#   sdp-private : gateway, protected-service (only reachable through the gateway)
+#   sdp-mgmt    : controller <-> database (internal, no host access)
+#
+# Usage:  cp .env.example .env  # then set real passwords
+#         docker compose up -d --build
+#         ./scripts/demo.sh
 
-# //////////////////////////////////////////////////////////////////////////////
-#                                  SERVICES
-# //////////////////////////////////////////////////////////////////////////////
+name: sdp
+
+x-defaults: &defaults
+  restart: unless-stopped
+  init: true
 
 services:
 
-  # ============== SDP DATABASE (MySQL) ==============
+  # ============== SDP DATABASE ==============
   sdp-db:
-    container_name: sdp-db
-    image: mysql:5.7
-    ports:
-      - "3306:3306"
+    <<: *defaults
+    image: mariadb:11.4
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?set DB_ROOT_PASSWORD in .env}
+      MARIADB_DATABASE: sdp
+      MARIADB_USER: ${DB_USER:-sdp}
+      MARIADB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+      PROTECTED_SERVICE_IP: ${PROTECTED_SERVICE_IP:-10.231.1.30}
+      PROTECTED_PORT: ${PROTECTED_PORT:-8080}
     volumes:
-      - ./database:/docker-entrypoint-initdb.d
-    environment:
-      - MYSQL_ROOT_PASSWORD=antonio
-      - MYSQL_DATABASE=sdp
-      - MYSQL_USER=antonio
-      - MYSQL_PASSWORD=antonio
+      - ./database:/docker-entrypoint-initdb.d:ro
+      - db-data:/var/lib/mysql
     networks:
-      - sdp-net
-
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    container_name: pma
-    environment:
-      PMA_HOST: sdp-db
-      PMA_PORT: 3306
-      PMA_ARBITRARY: 1
-    restart: always
-    ports:
-      - 8081:80
-    networks:
-      - sdp-net
+      - sdp-mgmt
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
 
   # ============== SDP CONTROLLER ==============
-
   sdp-controller:
-    container_name: sdp-controller
-    build:
-      context: ./controller
-      dockerfile: Dockerfile
-    ports:
-      - "5000:5000"
+    <<: *defaults
+    build: ./controller
+    environment:
+      DB_HOST: sdp-db
+      DB_USER: ${DB_USER:-sdp}
+      DB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+      DB_NAME: sdp
+      CA_KEY_PASSWORD: ${CA_KEY_PASSWORD:?set CA_KEY_PASSWORD in .env}
+      SDP_IDS: "1 2 3"
+      CONTROLLER_SDP_ID: "2"
     volumes:
-      - ./data/certs:/controller/certs
+      - pki:/certs
+      - bundles:/bundles
     networks:
-      - sdp-net
+      sdp-mgmt:
+      sdp-public:
+        ipv4_address: ${CONTROLLER_IP:-10.231.0.10}
     depends_on:
-      - sdp-db
+      sdp-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "test", "-f", "/certs/.ready"]
+      interval: 3s
+      timeout: 3s
+      retries: 60
 
- # ============== SDP GATEWAY ==============
-
+  # ============== SDP GATEWAY ==============
   sdp-gateway:
-    container_name: sdp-gateway
-    build:
-      context: ./gateway
-      dockerfile: Dockerfile
-    ports:
-      - "4444:4444"
+    <<: *defaults
+    build: ./gateway
+    cap_add:
+      - NET_ADMIN   # iptables
+      - NET_RAW     # libpcap sniffing of SPA packets
+    sysctls:
+      net.ipv4.ip_forward: "1"
+    environment:
+      SDP_ID: "1"
+      PUBLIC_IP: ${GATEWAY_IP:-10.231.0.20}
+      CTRL_ADDR: sdp-controller
     volumes:
-      - ./data/certs:/gateway/certs
+      - type: volume
+        source: bundles
+        target: /bundle
+        read_only: true
+        volume:
+          subpath: "1"
+      # credentials rotated by the controller survive container re-creation
+      - gateway-state:/etc/fwknop
     networks:
-      - sdp-net
+      sdp-public:
+        ipv4_address: ${GATEWAY_IP:-10.231.0.20}
+      sdp-private:
+        ipv4_address: ${GATEWAY_PRIVATE_IP:-10.231.1.20}
     depends_on:
-      - sdp-db
+      sdp-controller:
+        condition: service_healthy
 
-  # ============== SDP CLIENT ============== 
+  # ============== PROTECTED SERVICE (Accepting Host) ==============
+  protected-service:
+    <<: *defaults
+    image: nginx:1.27-alpine
+    networks:
+      sdp-private:
+        ipv4_address: ${PROTECTED_SERVICE_IP:-10.231.1.30}
 
+  # ============== SDP CLIENT (Initiating Host) ==============
   sdp-client:
-    container_name: sdp-client
-    build:
-      context: ./client
-      dockerfile: Dockerfile
+    <<: *defaults
+    build: ./client
+    environment:
+      SDP_ID: "3"
+      GATEWAY_IP: ${GATEWAY_IP:-10.231.0.20}
+      SERVICE_IDS: "1"
+      CTRL_ADDR: sdp-controller
     volumes:
-      - ./data/certs:/client/certs
+      - type: volume
+        source: bundles
+        target: /bundle
+        read_only: true
+        volume:
+          subpath: "3"
+      # ~/.fwknoprc and keys are rotated by the controller on every session
+      - client-home:/root
     networks:
-      - sdp-net
+      sdp-public:
+        ipv4_address: ${CLIENT_IP:-10.231.0.40}
     depends_on:
-      - sdp-db
+      sdp-controller:
+        condition: service_healthy
+      sdp-gateway:
+        condition: service_started
 
-# //////////////////////////////////////////////////////////////////////////////
-#                                  NETWORKS
-# //////////////////////////////////////////////////////////////////////////////
+  # ============== OPTIONAL: phpMyAdmin (docker compose --profile debug up) ==============
+  phpmyadmin:
+    image: phpmyadmin:5.2
+    profiles: ["debug"]
+    environment:
+      PMA_HOST: sdp-db
+    ports:
+      - "127.0.0.1:8081:80"
+    networks:
+      - sdp-mgmt
+    depends_on:
+      sdp-db:
+        condition: service_healthy
 
 networks:
-  sdp-net: {}
+  sdp-public:
+    ipam:
+      config:
+        - subnet: ${PUBLIC_SUBNET:-10.231.0.0/24}
+  sdp-private:
+    internal: true
+    ipam:
+      config:
+        - subnet: ${PRIVATE_SUBNET:-10.231.1.0/24}
+  sdp-mgmt:
+    internal: true
+
+volumes:
+  db-data:
+  pki:
+  bundles:
+  gateway-state:
+  client-home:

@@ -1,0 +1,16 @@
+# fwknop client stanzas (rendered by entrypoint.sh).
+# `fwknop -n service_gate` sends an SPA packet asking the gateway to open
+# SERVICE_IDS for this client, then contacts the controller for credential
+# updates through SDP_CTRL_CLIENT_CONF.
+
+[default]
+
+[service_gate]
+SDP_ID                      __SDP_ID__
+ALLOW_IP                    __CLIENT_IP__
+SERVICE_IDS                 __SERVICE_IDS__
+SPA_SERVER                  __GATEWAY_IP__
+KEY_BASE64                  __KEY_BASE64__
+HMAC_KEY_BASE64             __HMAC_KEY_BASE64__
+USE_HMAC                    Y
+SDP_CTRL_CLIENT_CONF        /root/sdp_ctrl_client.conf

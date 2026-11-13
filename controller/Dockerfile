@@ -1,32 +1,29 @@
-FROM ubuntu:18.04
+FROM node:22-bookworm-slim
 
+# openssl: used by the `pem` npm package to issue certificates
+# mariadb-client: lets the entrypoint check which SDP IDs already have keys
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends ca-certificates git openssl mariadb-client \
+ && rm -rf /var/lib/apt/lists/*
+
+# Waverley Labs SDP Controller, pinned for reproducible builds
+ARG SDPCONTROLLER_REPO=https://github.com/waverleylabs/SDPController.git
+ARG SDPCONTROLLER_COMMIT=54fbca8e9b3a2f164c1540324ee9f510141b08b4
+RUN git clone "$SDPCONTROLLER_REPO" /opt/SDPController \
+ && cd /opt/SDPController \
+ && git checkout --quiet "$SDPCONTROLLER_COMMIT" \
+ && rm -rf .git \
+ && npm install --omit=dev --no-audit --no-fund
+
+COPY config.js /opt/SDPController/config.js
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+
+# /certs: controller-only PKI (CA key included), generated at runtime.
+# /bundles: one read-only credential bundle per gateway/client SDP ID.
+RUN mkdir -p /certs /bundles && chown node:node /certs /bundles
+
+USER node
+WORKDIR /certs
 EXPOSE 5000
 
-WORKDIR /controller
-
-RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
-
-# Install dependencies
-RUN apt-get update -y
-RUN apt-get install -y curl git libaio1 libaio-dev openssl openssh-server
-RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
-RUN apt-get install -y nodejs
-
-# Setup MySQL & Controller
-RUN git clone https://github.com/waverleylabs/SDPController.git
-COPY config.js /controller/SDPController/config.js
-RUN cd SDPController && npm install
-
-# Generate certificates
-RUN mkdir certs
-RUN cd ~/; openssl rand -writerand .rnd
-RUN echo "Generating Root Cert.."
-RUN openssl genrsa -des3 -passout pass:antonio -out certs/ca.key 4096
-RUN openssl req -new -x509 -days 365 -key certs/ca.key -out certs/ca.crt -passin pass:antonio -subj "/C=ES/ST=PA/L=A/O=Uniovi/OU=SE/CN=PhD/emailAddress=abc@xyz.com"
-
-WORKDIR /controller
-
-COPY . .
-#CMD ["node", "./SDPController/sdpController.js"]
-#CMD ["/bin/bash", "-c", "sleep infinity"]
-CMD ["/bin/bash", "-c", "/controller/run.sh"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

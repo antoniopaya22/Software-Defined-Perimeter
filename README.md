@@ -2,132 +2,101 @@
 
 [![Preprint](https://img.shields.io/badge/DOI-10.2139%2Fssrn.4326496-0E7490)](https://doi.org/10.2139/ssrn.4326496)
 ![GitHub LICENSE](https://img.shields.io/github/license/antoniopaya22/Software-Defined-Perimeter?color=green&label=license&logoColor=green)
-![Version](https://img.shields.io/badge/version-1.0.0-green)
 ![Environment](https://img.shields.io/badge/environment-docker-blue)
 
 ## Description
 
 Code for the preprint **[Securing the Software-Defined Perimeter Framework with Automated Security Configuration Deployment Systems](https://doi.org/10.2139/ssrn.4326496)** (SSRN, 2023).
 
+This repository deploys a Software-Defined Perimeter (SDP) lab with Docker Compose, based on the open-source implementation by [Waverley Labs](https://www.waverleylabs.com/services/software-defined-perimeter-panther-sdp-implementation/): an SDP Controller, an SDP Gateway that hides a protected service behind a default-drop firewall, and an SDP Client that gains access with Single Packet Authorization (SPA).
 
-This repository contains the code and resources necessary to deploy an architecture based on Software-Defined Perimeters using the open-source implementation made by [WaverleyLabs](https://www.waverleylabs.com/services/software-defined-perimeter-panther-sdp-implementation/). The deployment can be performed both on real machines and devices as well as on a virtualized network architecture using Docker and Docker-Compose to test the functionality of the SDPs.
+The automated security configuration deployment system used in the paper to harden the SDP hosts is **Egida**, maintained in its own repository: [Egida-Kassandra/egida](https://github.com/Egida-Kassandra/egida).
+
+> **Lab use only.** This setup is meant for research and testing. Review the configuration, credentials handling and firewall rules before using any part of it in production.
 
 ## Architecture & Components
 
 ![SDP Architecture](docs/BasicSDP.svg)
 
-- **SDP Controller**: The SDP Controller uses the [WaverleyLabs - SDP Controller](https://github.com/waverleylabs/SDPController.git) repository and contains a set of scripts and resources to automate its configuration and deployment. For more information on SDP Controller, see the following sites:
-  - [http://www.waverleylabs.com/services/software-defined-perimeter](http://www.waverleylabs.com/services/software-defined-perimeter/)
-  - [https://cloudsecurityalliance.org/group/software-defined-perimeter/](https://cloudsecurityalliance.org/group/software-defined-perimeter/)
+| Container | Role | Networks |
+|---|---|---|
+| `sdp-controller` | [Waverley Labs SDP Controller](https://github.com/waverleylabs/SDPController). Runs the PKI: issues certificates and SPA keys for every member, and tells gateways which clients may reach which services. | public, mgmt |
+| `sdp-db` | MariaDB with the controller's members, services and permissions. | mgmt (internal) |
+| `sdp-gateway` | [fwknop](https://github.com/waverleylabs/fwknop) daemon (SDP fork). Drops all traffic by default; when a valid SPA packet arrives it opens a time-limited DNAT/FORWARD rule for that client only. | public, private |
+| `protected-service` | Accepting Host (an nginx web server). Only reachable through the gateway. | private (internal) |
+| `sdp-client` | Initiating Host. Sends SPA packets with `fwknop` and refreshes its credentials with the controller. | public |
 
-- **SDP Gateway**: The SDP Gateway uses the open source software [fwknop](https://github.com/mrash/fwknop) which implements an authorization scheme known as Single Packet Authorization (SPA) for strong service concealment. SPA requires only a single packet which is encrypted, non-replayable, and authenticated via an HMAC in order to communicate desired access to a service that is hidden behind a firewall in a default-drop filtering stance. The SDP Gateway uses the iptables firewall to deny all requests to the Accepting Hosts (AH) by default, authorizing only those that have been authorized by the SDP Controller.
-
-- **SDP Client (IH)**: The SDP client or initiating host is responsible for requesting the necessary authorization from the SDP Controller to access the Accepting Hosts (AH) protected by the SDP Gateway.
+- **SDP Controller**: authenticates members with mutual TLS (each certificate's CN is the member's SDP ID), rotates their credentials, and pushes service and access lists to the gateways.
+- **SDP Gateway**: uses Single Packet Authorization (SPA) for strong service concealment. SPA needs a single packet, encrypted, non-replayable and authenticated with an HMAC, to request access to a service hidden behind a firewall in a default-drop stance.
+- **SDP Client (IH)**: requests access to the services the controller allows it to use, without any port being visible beforehand.
 
 ![SPA](docs/rsz_spa.png)
 
-## Installation and deployment
+## Quick start
 
-To deploy in a Docker test environment you must first have Docker and Docker-Compose installed on your system. The next steps are to define the network architecture you want to set up and which services you want to protect with the gateways.
-
-### Configure SDP-Controller
-
-The SDP Controller uses a MySQL database to store the users, services, permissions, etc. In the database folder, there is included a file called `setup.sql` with the function of creating all the necessary tables and relations in the database.
-
-> This file includes in lines 693-704 some example data added:
-```sql
-INSERT INTO sdpid(sdpid,valid,type,country,state,locality,org,org_unit,alt_name,email,serial) VALUES (1,1,'gateway','ES', 'PA', 'A', 'Uniovi', 'SE', 'PhD', 'abc@xyz.com', 'abc123');
-INSERT INTO sdpid(sdpid,valid,type,country,state,locality,org,org_unit,alt_name,email,serial) VALUES (2,1,'controller','ES', 'PA', 'A', 'Uniovi', 'SE', 'PhD', 'abc@xyz.com', 'abc123');
-INSERT INTO sdpid(sdpid,valid,type,country,state,locality,org,org_unit,alt_name,email,serial) VALUES (3,1,'client','ES', 'PA', 'A', 'Uniovi', 'SE', 'PhD', 'abc@xyz.com', 'abc123');
-INSERT INTO service VALUES(1,'controller', 'controller' );
-INSERT INTO service VALUES(2,'tcp', 'tcp' );
-INSERT INTO service VALUES(3,'udp', 'udp' );
-INSERT INTO service_gateway (id,service_id, gateway_sdpid, protocol, port, nat_ip, nat_port) VALUES(1, 1, 1 ,'tcp',5000, 'controller', 5000);
-INSERT INTO service_gateway (id,service_id, gateway_sdpid, protocol, port, nat_ip, nat_port) VALUES(2, 2, 1 ,'tcp',4444, 'gateway', 4444);
-INSERT INTO sdpid_service VALUES (1, 1, 1);
-INSERT INTO sdpid_service VALUES (2, 1, 2);
-INSERT INTO sdpid_service VALUES(3, 3, 1);
-INSERT INTO sdpid_service VALUES(4, 3, 2);
-```
-
-> In the example data, a controller listening on port 5000 and a gateway allowing authorized connections on port 4444 is added.
-
-In the folder named `controller` you will find both the Dockerfile for the SDP Controller deployment and the following files:
-
-- `config.js`: Contains the SDP Controller configuration variables such as port, database connection or certificate locations.
-- `run.sh`: Generates the credentials and launches the SDP Controller process in listening mode.
-
-### Configure SDP-Gateway
-
-The `gateway` folder contains both the Dockerfile for the SDP Gateway deployment and a folder called `config` with the following configuration files that must be edited to adapt to the designed architecture:
-
-- `access.conf`: This file defines how fwknopd will modify firewall access controls for specific IPs/networks.
-
-- `fwknopd.conf`: This is the configuration file for fwknopd, the Firewall Knock Operator daemon (SPA).
-
-- `gate_sdp_ctrl_client.conf`: This file defines the locations of the certificates and how to connect to the SDP Controller.
-
-- `gate.fwknoprc`: fwknoprc stanzas configuration file
-
-### Configure SDP-Client
-
-The `client` folder contains a Dockerfile for the SDP Client deployment and the following configuration files for communication and authorization with the SDP Controller:
-
-- `.fwknoprc`: This file defines the services protected by the SDP Gateway that the client wants to access.
-
-- `sdp_ctrl_client.conf`: This file defines the locations of the certificates and how to connect to the SDP Controller.
-
-### Start
-
-1. Modify the `docker-compose.yml` file to deploy the desired network architecture and run Docker-Compose. 
-
-**Important**: The SDP Controller is the one that generates the certificates, you must copy the necessary certificates to the SDP Client and SDP Gateway (in the example case they have a shared volume).
-
-> The content of the `docker-compose.yml` file contains a basic architecture with a single client, controller & gateway.
+Requirements: Docker Engine 26 or newer, with the Compose plugin (`docker compose`).
 
 ```bash
-$ docker-compose up -d
+cp .env.example .env
+# edit .env and replace every "change-me" (e.g. with: openssl rand -base64 24)
+
+docker compose up -d --build --wait
+./scripts/demo.sh
 ```
 
-2. Connecting the SDP Gateway and the SDP Controller
+`scripts/demo.sh` checks the whole flow:
+
+```text
+[1/4] Request to http://10.231.0.20:8080/ before SPA (expect: blocked)
+  PASS no response, the service is hidden
+[2/4] Direct request to the private network (expect: unreachable)
+  PASS private network not reachable from the client
+[3/4] Sending SPA packet: fwknop -n service_gate
+  PASS SPA sent and controller session completed
+[4/4] Request to http://10.231.0.20:8080/ after SPA (expect: HTTP 200)
+  PASS protected service reachable through the gateway
+```
+
+The same steps by hand:
 
 ```bash
-$ docker exec -it sdp-gateway /bin/bash
-$ fwknopd -f
-
----
-(sdp_com.c:423) Setting CA cert for peer cert verification.
-(sdp_com.c:622) Starting connection attempt 1
-(sdp_com.c:371) Connected with TLS_AES_256_GCM_SHA384 encryption
-(sdp_com.c:735) Server certificates:
-(sdp_com.c:737) Subject: /C=ES/ST=PA/L=A/O=Uniovi/OU=SE/CN=2/emailAddress=abc@xyz.com
-(sdp_com.c:740) Issuer: /C=ES/ST=PA/L=A/O=Uniovi/OU=SE/CN=PhD/emailAddress=abc@xyz.com
-(sdp_ctrl_client.c:627) Credentials-good message received
-(sdp_message.c:258) Received credential update message
-(sdp_ctrl_client.c:637) Credential update received
-(sdp_ctrl_client.c:1960) All new credentials stored successfully
-(sdp_message.c:272) Received service or access data message
-(sdp_ctrl_client.c:675) Access data update received
+docker compose exec sdp-client curl -m 4 http://10.231.0.20:8080/   # times out
+docker compose exec sdp-client fwknop -n service_gate                # send SPA
+docker compose exec sdp-client curl http://10.231.0.20:8080/         # nginx page
 ```
 
-3. Request certificates to the SDP Controller from the SDP Client
+Access stays open for the time set by the gateway (30 s by default), and only for the client's IP address.
 
-```bash
-$ docker exec -it sdp-client /bin/bash
-$ /usr/bin/fwknop -n service_gate
+To start from scratch (new CA, keys and database): `docker compose down -v`.
 
----
-(sdp_com.c:423) Setting CA cert for peer cert verification.
-(sdp_com.c:622) Starting connection attempt 1
-(sdp_com.c:371) Connected with TLS_AES_256_GCM_SHA384 encryption
-(sdp_com.c:735) Server certificates:
-(sdp_com.c:737) Subject: /C=ES/ST=PA/L=A/O=Uniovi/OU=SE/CN=2/emailAddress=abc@xyz.com
-(sdp_com.c:740) Issuer: /C=ES/ST=PA/L=A/O=Uniovi/OU=SE/CN=PhD/emailAddress=abc@xyz.com
-(sdp_ctrl_client.c:627) Credentials-good message received
-(sdp_message.c:258) Received credential update message
-(sdp_ctrl_client.c:637) Credential update received
-(sdp_ctrl_client.c:1960) All new credentials stored successfully
-```
+## How it works
+
+1. **Database.** On first start, MariaDB loads the schema (`database/01-schema.sql`) and the example data (`database/02-seed.sh`): gateway (SDP ID 1), controller (SDP ID 2), client (SDP ID 3), and service 1, which maps gateway port `8080/tcp` to `protected-service:80`. The client is allowed to use service 1.
+2. **Controller bootstrap** (`controller/entrypoint.sh`). Creates the CA if missing, then runs `genCredentials.js` for each SDP ID that has no keys yet: a TLS certificate and key, plus SPA encryption and HMAC keys stored in the database. It exports one bundle per member into the `bundles` volume. Each container mounts only its own bundle, and the CA private key never leaves the controller.
+3. **Gateway** (`gateway/entrypoint.sh`). Sets `INPUT`/`FORWARD` to `DROP`, renders its configuration from the bundle, and starts `fwknopd`. fwknopd connects to the controller, receives the service list and the clients' SPA keys, and sniffs SPA packets on the public interface.
+4. **Client** (`client/entrypoint.sh`). Renders `~/.fwknoprc` and `~/sdp_ctrl_client.conf` from its bundle. `fwknop -n service_gate` sends the SPA packet to the gateway, then contacts the controller, which rotates the client's keys and notifies the gateway.
+
+Credentials rotated by the controller are kept in the `gateway-state` and `client-home` volumes, so they survive container restarts and re-creation.
+
+## Configuration
+
+| What | Where |
+|---|---|
+| Passwords, subnets, IP addresses, protected port | `.env` (see `.env.example`) |
+| Members, services and permissions | `database/02-seed.sh` (applied only when the database volume is empty) |
+| Controller settings | `controller/config.js` (reads environment variables) |
+| Gateway daemon | `gateway/config/fwknopd.conf.tmpl` |
+| Gateway / client control-channel settings | `gateway/config/sdp_ctrl_client.conf.tmpl`, `client/config/*.tmpl` |
+| Upstream versions | `SDPCONTROLLER_COMMIT` and `FWKNOP_COMMIT` build args in the Dockerfiles |
+
+To inspect the database, start phpMyAdmin (bound to localhost only): `docker compose --profile debug up -d phpmyadmin`, then open <http://127.0.0.1:8081>.
+
+## Troubleshooting
+
+- **`docker compose` asks for variables:** create `.env` from `.env.example`.
+- **Subnet overlaps with an existing network:** set `PUBLIC_SUBNET`, `PRIVATE_SUBNET` and the IP variables in `.env`.
+- **Gateway logs show iptables permission errors:** the container needs the `NET_ADMIN` and `NET_RAW` capabilities, which `docker-compose.yml` grants. Rootless Docker or restricted hosts may not allow them.
+- **Logs:** `docker compose logs -f sdp-gateway sdp-controller`.
 
 ## Citation
 

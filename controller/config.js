@@ -1,65 +1,66 @@
+// SDP Controller configuration.
+// Secrets and connection details come from environment variables (see .env.example)
+// so nothing sensitive is committed to the repository.
+
+const env = (name, fallback) => {
+    const value = process.env[name];
+    if (value === undefined || value === '') {
+        if (fallback === undefined) {
+            throw new Error('Missing required environment variable ' + name);
+        }
+        return fallback;
+    }
+    return value;
+};
+
+const certDir = env('CERT_DIR', '/certs');
+const controllerId = env('CONTROLLER_SDP_ID', '2');
+
 module.exports = {
     // print debug statements
-    'debug': false,
+    'debug': env('CONTROLLER_DEBUG', 'false') === 'true',
 
-	'serverPort': 5000,
-	'maxConnections': 100,
+    'serverPort': parseInt(env('CONTROLLER_PORT', '5000'), 10),
+    'maxConnections': 100,
 
-	// milliseconds, 0 indicates no timeout
-	// this is controller's way of noticing a lost connection
-	'socketTimeout': 30000,
+    // milliseconds, 0 indicates no timeout
+    // this is controller's way of noticing a lost connection
+    'socketTimeout': 30000,
 
-	// false indicates the server should disconnect
-	// after a successful credential update
-	'keepClientsConnected': true,
+    // false indicates the server should disconnect
+    // after a successful credential update
+    'keepClientsConnected': true,
 
-	// allow legacy access request type
-	// Legacy access request means the SPA packet specifies
-	// the port to open along with detailed NAT instructions
-	// if applicable. This mode is not secure because the
-	// client can be NAT'ed to anywhere it requests if NAT
-	// is enabled.
-	'allowLegacyAccessRequests': false,
+    // Legacy access requests let the SPA packet choose the port and NAT
+    // target, which is not secure. Keep disabled.
+    'allowLegacyAccessRequests': false,
 
-	// can create these using ./setup/create-certs.sh
-	'serverCert': '/controller/certs/2.crt',
-	'serverKey':  '/controller/certs/2.key',
+    // Controller TLS identity, issued by genCredentials.js for its own SDP ID
+    'serverCert': certDir + '/' + controllerId + '.crt',
+    'serverKey': certDir + '/' + controllerId + '.key',
+    // keys produced by genCredentials.js are not encrypted
+    'serverKeyPassword': '',
+    'serverKeyPasswordRequired': false,
 
-	// to be prompted for a password, set this field
-	// to a null string using '' (that's 2 single quotes
-	// with no spaces between)
-	'serverKeyPassword': 'antonio',
-	'serverKeyPasswordRequired': true,
+    // CA used to sign every member certificate (created by entrypoint.sh)
+    'caCert': certDir + '/ca.crt',
+    'caKey': certDir + '/ca.key',
+    'caKeyPassword': env('CA_KEY_PASSWORD'),
+    'caKeyPasswordRequired': true,
 
-	// can create these using ./setup/create-certs.sh
-	'caCert': '/controller/certs/ca.crt',
-	'caKey': '/controller/certs/ca.key',
+    // how many days new certificates should be good for
+    'daysToExpiration': parseInt(env('CERT_DAYS', '31'), 10),
 
-	// to be prompted for a password, delete this field or
-	// set it to a null string using '' (that's 2 single
-	// quotes with no spaces between)
-	'caKeyPassword': 'antonio',
-	'caKeyPasswordRequired': true,
+    // SPA key lengths in bytes (genCredentials.js accepts 64 to 256)
+    'encryptionKeyLen': 64,
+    'hmacKeyLen': 128,
 
-	// how many days new certificates should be good for
-	'daysToExpiration': 31,
-
-	// SPA encryption key length in bytes, range is 4 to 32
-	'encryptionKeyLen': 64,
-
-	// SPA HMAC key length in bytes, range is 4 to 128
-	'hmacKeyLen': 128,
-
-	// database options
-	'dbHost': 'sdp-db',
-	'dbUser': 'antonio',
-	'dbPasswordRequired': true,
-
-	// to be prompted for a password, delete this field or
-	// set it to a null string using '' (that's 2 single
-	// quotes with no spaces between)
-    'dbPassword': 'antonio',
-    'dbName': 'sdp',
+    // database options
+    'dbHost': env('DB_HOST', 'sdp-db'),
+    'dbUser': env('DB_USER', 'sdp'),
+    'dbPasswordRequired': true,
+    'dbPassword': env('DB_PASSWORD'),
+    'dbName': env('DB_NAME', 'sdp'),
 
     // if any of these are exceeded, the controller
     // disconnects from the client
@@ -74,5 +75,4 @@ module.exports = {
     // interval (milliseconds) to check database for changes
     // that require sending updates to gateways
     'databaseMonitorInterval': 3000,
-
 };

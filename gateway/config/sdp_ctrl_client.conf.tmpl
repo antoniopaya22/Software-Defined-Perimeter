@@ -1,0 +1,21 @@
+# SDP control client configuration for the gateway (rendered by entrypoint.sh).
+# Full option reference: client/SAMPLE_sdp_ctrl_client.conf in waverleylabs/fwknop.
+
+CTRL_PORT                       __CTRL_PORT__
+CTRL_ADDR                       __CTRL_ADDR__
+
+# The gateway reaches the controller directly (mutual TLS), without SPA.
+USE_SPA                         N
+FOREGROUND                      Y
+PID_FILE                        /var/run/sdp_ctrl_client.pid
+
+KEY_FILE                        /etc/fwknop/certs/__SDP_ID__.key
+CERT_FILE                       /etc/fwknop/certs/__SDP_ID__.crt
+CA_CERT_FILE                    /etc/fwknop/certs/ca.crt
+
+# This gateway's own SPA keys, issued by the controller. The control client
+# rewrites them here when the controller rotates credentials.
+SPA_ENCRYPTION_KEY              __KEY_BASE64__
+SPA_HMAC_KEY                    __HMAC_KEY_BASE64__
+
+KEEP_ALIVE_INTERVAL             1800

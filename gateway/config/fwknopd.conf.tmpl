@@ -123,7 +123,7 @@ SDP_CTRL_CLIENT_CONF   /etc/fwknop/gate_sdp_ctrl_client.conf;
 # Default if not set is eth0.  The '-i <intf>' command line option overrides
 # the PCAP_INTF setting.
 #
-PCAP_INTF                   eth0;
+PCAP_INTF                   __PCAP_INTF__;
 
 # By default fwknopd does not put the pcap interface into promiscuous mode.
 # Set this to 'Y' to enable promiscuous sniffing.
@@ -437,7 +437,13 @@ ENABLE_IPT_LOCAL_NAT        Y;
 # SNAT target then also define an IP address with the SNAT_TRANSLATE_IP
 # variable.
 #
-ENABLE_IPT_SNAT             Y;
+# Disabled in this lab: fwknopd builds its MASQUERADE rule with
+# "--to-ports <gateway port>", so every forwarded connection reuses the same
+# source port towards the protected service and a new connection collides
+# with the previous one's conntrack TIME_WAIT entry (~60 s of failures).
+# gateway/entrypoint.sh adds a plain MASQUERADE rule on the private side
+# instead; FORWARD filtering is still done by fwknopd per client.
+ENABLE_IPT_SNAT             N;
 #SNAT_TRANSLATE_IP           __CHANGEME__;
 
 # Add ACCEPT rules to the FWKNOP_OUTPUT chain. This is usually only useful

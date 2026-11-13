@@ -1,0 +1,19 @@
+# SDP control client configuration for the client (rendered by entrypoint.sh).
+# Full option reference: client/SAMPLE_sdp_ctrl_client.conf in waverleylabs/fwknop.
+
+CTRL_PORT                       __CTRL_PORT__
+CTRL_ADDR                       __CTRL_ADDR__
+FWKNOP_PATH                     /usr/bin/fwknop
+
+# The controller is reached directly over mutual TLS in this lab topology.
+USE_SPA                         N
+FOREGROUND                      Y
+
+KEY_FILE                        /root/certs/__SDP_ID__.key
+CERT_FILE                       /root/certs/__SDP_ID__.crt
+CA_CERT_FILE                    /root/certs/ca.crt
+
+# This client's SPA keys, issued by the controller. The control client
+# rewrites them here (and in ~/.fwknoprc) when credentials are rotated.
+SPA_ENCRYPTION_KEY              __KEY_BASE64__
+SPA_HMAC_KEY                    __HMAC_KEY_BASE64__
