@@ -19,7 +19,7 @@ services:
   # ============== SDP DATABASE ==============
   sdp-db:
     <<: *defaults
-    image: mariadb:11.4
+    image: mariadb:11.7
     environment:
       MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?set DB_ROOT_PASSWORD in .env}
       MARIADB_DATABASE: sdp
