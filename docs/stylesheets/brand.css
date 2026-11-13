@@ -1,0 +1,110 @@
+/* SDP Lab brand: "dark until the knock".
+   Graphite with a green cast, signal lime for authorized traffic, red for
+   dropped packets and amber reserved for the SPA packet itself. The hero
+   background is a matrix of closed ports. Used by the landing page
+   (landing.css) and by the documentation pages (extra.css). */
+
+.lp, .lp-nav, .lp-foot {
+  /* landing surfaces */
+  --lp-dark: #0b0d0c;
+  --lp-dark-2: #141816;
+  --lp-light: #f0efe8;
+  --lp-light-2: #e5e4db;
+  --lp-ink: #111411;
+
+  /* signal lime */
+  --lp-accent: #c5f135;
+  --lp-accent-hover: #d6ff5c;
+  --lp-accent-soft: #d6f77a;
+  --lp-accent-ink: #4a6400;
+  --lp-on-accent: #0b0d0c;
+  --lp-mark: #c5f135;
+  --lp-ok: #c5f135;
+  --lp-ok-soft: rgba(197, 241, 53, .12);
+  --lp-ok-ink: #4a6400;
+  --lp-red: #ff4d4d;
+  --lp-amber: #ffb020;
+
+  /* text and code on dark */
+  --lp-text-d: #eef0ec;
+  --lp-text-d2: #cfd4cc;
+  --lp-muted-d: #a3aaa0;
+  --lp-dim-d: #7c8478;
+  --lp-node: #181c1a;
+  --lp-code-bg: #0f1210;
+  --lp-code-bar: #181c19;
+  --lp-code-fg: #dfe4dc;
+  --lp-nav-bg: rgba(11, 13, 12, .86);
+
+  /* hero: a field of closed ports with a faint lime signal */
+  --lp-glow-1: rgba(197, 241, 53, .10);
+  --lp-glow-2: rgba(197, 241, 53, .04);
+  --lp-hero-pattern: radial-gradient(circle, rgba(255, 255, 255, .16) 1.1px, transparent 1.6px);
+  --lp-hero-pattern-size: 22px 22px;
+
+  /* eyebrows look like packet header fields */
+  --lp-eyebrow-font: var(--md-code-font-family, "JetBrains Mono", monospace);
+
+  /* call to action: lime band, dark type */
+  --lp-cta-bg: #c5f135;
+  --lp-cta-fg: #0b0d0c;
+  --lp-cta-mark: #0b0d0c;
+  --lp-cta-line: rgba(11, 13, 12, .35);
+  --lp-cta-install-bg: rgba(11, 13, 12, .08);
+  --lp-cta-install-btn: #0b0d0c;
+  --lp-cta-install-btn-fg: #c5f135;
+  --lp-cta-btn-bg: #0b0d0c;
+  --lp-cta-btn-fg: #c5f135;
+  --lp-cta-watermark: rgba(11, 13, 12, .28);
+}
+
+/* product header of the docs pages */
+:root {
+  --brand-header-bg: #0b0d0c;
+  --brand-header-accent: #c5f135;
+  --brand-header-on-accent: #0b0d0c;
+}
+
+/* documentation pages */
+[data-md-color-scheme="default"] {
+  --md-mermaid-sequence-actor-line-color: #c9d1c4;
+  --md-mermaid-sequence-actor-border-color: #4a6400;
+  --md-mermaid-sequence-message-line-color: #4a6400;
+  --md-mermaid-sequence-number-bg-color: #4a6400;
+  --md-mermaid-node-bg-color: #eef7cf;
+  --md-mermaid-node-fg-color: #111411;
+  --md-mermaid-edge-color: #4a6400;
+  --md-mermaid-label-bg-color: #f0efe8;
+  --md-mermaid-label-fg-color: #111411;
+  --lp-accent: #4a6400;
+  --lp-accent-hover: #3a4f00;
+  --lp-accent-soft: #eef7cf;
+  --lp-on-accent: #ffffff;
+}
+
+[data-md-color-scheme="slate"] {
+  --md-mermaid-sequence-actor-line-color: #323a33;
+  --md-mermaid-sequence-actor-border-color: #c5f135;
+  --md-mermaid-sequence-message-line-color: #c5f135;
+  --md-mermaid-sequence-number-bg-color: #c5f135;
+  --md-mermaid-node-bg-color: #1f2a0c;
+  --md-mermaid-node-fg-color: #eef0ec;
+  --md-mermaid-edge-color: #c5f135;
+  --md-mermaid-label-bg-color: #141816;
+  --md-mermaid-label-fg-color: #eef0ec;
+  --lp-bg: #0b0d0c;
+  --lp-bg-soft: #111412;
+  --lp-surface: #141816;
+  --lp-line: #222823;
+  --lp-line-strong: #323a33;
+  --lp-accent: #c5f135;
+  --lp-accent-hover: #d6ff5c;
+  --lp-accent-soft: #1f2a0c;
+  --lp-on-accent: #0b0d0c;
+  --md-default-bg-color: #0b0d0c;
+  --md-code-bg-color: #111412;
+}
+
+/* landing: eyebrow dash becomes a small "packet" */
+.lp .lp-eyebrow::before { width: 8px; height: 8px; border-radius: 2px; }
+.lp .lp-dark .lp-eyebrow { color: var(--lp-accent-soft); }
