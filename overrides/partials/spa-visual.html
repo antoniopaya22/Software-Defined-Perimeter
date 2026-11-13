@@ -60,6 +60,6 @@
   <text x="434" y="230" class="spa__label spa__label--service" text-anchor="middle">SERVICE</text>
 
   <!-- status line -->
-  <text x="40" y="312" class="spa__status spa__status--denied">DROP  tcp/8080  no rule</text>
-  <text x="40" y="312" class="spa__status spa__status--granted">ACCEPT  10.231.0.40 → :8080  30 s</text>
+  <text x="40" y="312" class="spa__status spa__status--denied">{{ page.meta.hero.denied or "DROP  tcp/8080  no rule" }}</text>
+  <text x="40" y="312" class="spa__status spa__status--granted">{{ page.meta.hero.granted or "ACCEPT  client → :8080  30 s" }}</text>
 </svg>
